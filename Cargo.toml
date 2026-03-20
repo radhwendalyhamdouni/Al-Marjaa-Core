@@ -95,6 +95,8 @@ tracing = "0.1"
 default = ["network", "cranelift-backend"]
 cranelift-backend = ["cranelift", "cranelift-module", "cranelift-native", "cranelift-codegen", "cranelift-frontend", "cranelift-jit", "target-lexicon"]
 network = ["reqwest", "tokio"]
+# ميزة لتشغيل اختبارات الأداء الثقيلة
+bench-heavy = []
 
 [dev-dependencies]
 pretty_assertions = "1.4"

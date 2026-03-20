@@ -85,7 +85,7 @@ impl ErrorFormatter {
         let mut output = String::new();
         for (i, error) in errors.iter().enumerate() {
             if i > 0 {
-                output.push_str("\n");
+                output.push('\n');
             }
             output.push_str(&error.format_colored());
         }

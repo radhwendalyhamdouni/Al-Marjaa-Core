@@ -260,6 +260,11 @@ impl RegChunk {
     pub fn len(&self) -> usize {
         self.instructions.len()
     }
+    
+    /// هل الكود فارغ
+    pub fn is_empty(&self) -> bool {
+        self.instructions.is_empty()
+    }
 }
 
 impl Default for RegChunk {
@@ -354,6 +359,7 @@ pub struct RegisterVM {
 
 /// نوع القيمة في السجل (للتحسين)
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[allow(dead_code)] // ستُستخدم هذه الأنواع للتحسينات المستقبلية
 enum RegType {
     Number,
     Int,
@@ -694,7 +700,7 @@ impl RegisterVM {
                     self.stats.cache_misses += 1;
                     let chunk = self.chunk.as_ref().unwrap();
                     if let Some(name) = chunk.get_string(*name_idx) {
-                        let value = self.globals.borrow().get(name).as_ref().map(|v| Rc::clone(v));
+                        let value = self.globals.borrow().get(name).as_ref().map(Rc::clone);
                         match value {
                             Some(v) => {
                                 self.global_cache.insert(*name_idx, Rc::clone(&v));
@@ -989,7 +995,7 @@ impl RegisterVM {
                 let chunk = self.chunk.as_ref().unwrap();
                 
                 if let Some(func_name) = chunk.get_string(*func_idx) {
-                    let func_val = self.globals.borrow().get(func_name).as_ref().map(|v| Rc::clone(v));
+                    let func_val = self.globals.borrow().get(func_name).as_ref().map(Rc::clone);
                     
                     match func_val {
                         Some(v) => {

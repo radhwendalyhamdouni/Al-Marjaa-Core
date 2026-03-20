@@ -567,7 +567,7 @@ impl ProfileGuidedOptimizer {
         }
         
         // 2. إعادة ترتيب الفروع
-        for (&ip, _) in &self.profile.branch_frequencies {
+        for &ip in self.profile.branch_frequencies.keys() {
             suggestions.push(PGOOptimization::ReorderBranch(ip));
         }
         

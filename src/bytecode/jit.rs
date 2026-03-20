@@ -155,6 +155,7 @@ pub struct JitCompiler {
     /// SIMD مُحسِّن (لـ Tier 3+)
     simd_optimizer: Option<super::jit_simd::SimdJitOptimizer>,
     /// كاشف أنماط SIMD
+    #[allow(dead_code)]
     simd_detector: Option<super::jit_simd::SimdPatternDetector>,
 }
 
@@ -358,7 +359,7 @@ impl JitCompiler {
                 }
                 
                 // تحسين SIMD للحلقات الحسابية
-                OpCode::JumpBack(offset) => {
+                OpCode::JumpBack(_offset) => {
                     // التحقق من وجود نمط SIMD
                     if self.optimization_level >= 3 && self.is_simd_loop_candidate(opcodes, i) {
                         optimizations += 1;

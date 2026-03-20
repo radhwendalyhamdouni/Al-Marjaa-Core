@@ -5,6 +5,8 @@
 // يدعم callbacks من المرجع للاستخدام في المكتبات الخارجية
 // ═══════════════════════════════════════════════════════════════════════════════
 
+#![allow(clippy::type_complexity)]
+
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_double, c_int, c_void};
@@ -332,7 +334,7 @@ impl FfiManager {
         
         // memcpy
         self.register_native("نسخ_ذاكرة", vec!["هدف".to_string(), "مصدر".to_string(), "حجم".to_string()], |args| {
-            let dest = unsafe { args.get(0).map(|a| a.pointer).unwrap_or(ptr::null_mut()) };
+            let dest = unsafe { args.first().map(|a| a.pointer).unwrap_or(ptr::null_mut()) };
             let src = unsafe { args.get(1).map(|a| a.pointer).unwrap_or(ptr::null_mut()) };
             let size = unsafe { args.get(2).map(|a| a.int64 as usize).unwrap_or(0) };
             
@@ -453,8 +455,8 @@ impl FfiManager {
             ));
         }
         
-        // تحويل المعاملات
-        let ffi_args: Vec<FfiValue> = args.iter().map(|v| self.value_to_ffi(v)).collect();
+        // تحويل المعاملات (للاستخدام المستقبلي عند تفعيل libloading)
+        let _ffi_args: Vec<FfiValue> = args.iter().map(|v| self.value_to_ffi(v)).collect();
         
         // في بيئة حقيقية، سنستدعي الدالة فعلياً
         // #[cfg(not(target_arch = "wasm32"))]
@@ -575,17 +577,18 @@ pub fn to_c_string(s: &str) -> Result<*mut c_char, String> {
 }
 
 /// تحويل C string إلى نص
-pub fn from_c_string(ptr: *const c_char) -> Result<String, String> {
+///
+/// # Safety
+/// يجب أن يكون المؤشر صالحاً ويشير إلى نص منتهي بـ null
+pub unsafe fn from_c_string(ptr: *const c_char) -> Result<String, String> {
     if ptr.is_null() {
         return Ok(String::new());
     }
     
-    unsafe {
-        let c_str = CStr::from_ptr(ptr);
-        c_str.to_str()
-            .map(|s| s.to_string())
-            .map_err(|e| format!("خطأ في تحويل النص: {}", e))
-    }
+    let c_str = CStr::from_ptr(ptr);
+    c_str.to_str()
+        .map(|s| s.to_string())
+        .map_err(|e| format!("خطأ في تحويل النص: {}", e))
 }
 
 /// إنشاء مؤشر لقيمة المرجع
@@ -596,6 +599,9 @@ pub fn value_to_pointer(value: &Value) -> *mut c_void {
 }
 
 /// استرجاع قيمة المرجع من مؤشر
+///
+/// # Safety
+/// يجب أن يكون المؤشر صالحاً ويشير إلى قيمة Value مُخزَّنة بواسطة value_to_pointer
 pub unsafe fn pointer_to_value(ptr: *mut c_void) -> Option<Value> {
     if ptr.is_null() {
         return None;

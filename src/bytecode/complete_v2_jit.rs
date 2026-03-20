@@ -9,6 +9,9 @@
 // - Tracing JIT
 // ═══════════════════════════════════════════════════════════════════════════════
 
+#![allow(clippy::arc_with_non_send_sync)]
+#![allow(clippy::type_complexity)]
+
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;

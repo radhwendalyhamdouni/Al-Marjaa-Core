@@ -5,9 +5,6 @@
 // يعمل تلقائياً عند مستوى التحسين Tier 3+
 // ═══════════════════════════════════════════════════════════════════════════════
 
-use std::arch::x86_64::*;
-use std::mem;
-
 use super::simd::SimdProcessor;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -252,7 +249,7 @@ impl SimdJitOptimizer {
     // ═══════════════════════════════════════════════════════════════
     
     fn scalar_binary_op(&self, a: &[f64], b: &[f64], op: &SimdJitOp) -> Vec<f64> {
-        let len = a.len().min(b.len());
+        let _len = a.len().min(b.len()); // للتحقق من الحدود
         match op {
             SimdJitOp::AddVec => a.iter().zip(b.iter()).map(|(x, y)| x + y).collect(),
             SimdJitOp::SubVec => a.iter().zip(b.iter()).map(|(x, y)| x - y).collect(),
@@ -444,13 +441,13 @@ impl SimdPatternDetector {
     /// توليد كود SIMD محسن
     pub fn generate_simd_code(&self, pattern: &SimdPattern) -> String {
         match pattern {
-            SimdPattern::SumLoop { loop_var, list_expr } => {
+            SimdPattern::SumLoop { loop_var: _, list_expr } => {
                 format!("simd.مجموع({})", list_expr)
             }
-            SimdPattern::ProductLoop { loop_var, list_expr } => {
+            SimdPattern::ProductLoop { loop_var: _, list_expr } => {
                 format!("simd.ناتج({})", list_expr)
             }
-            SimdPattern::SumOfSquares { loop_var, list_expr } => {
+            SimdPattern::SumOfSquares { loop_var: _, list_expr } => {
                 format!("simd.مجموع_مربعات({})", list_expr)
             }
             SimdPattern::ElementWise { op, list1, list2 } => {
@@ -461,7 +458,7 @@ impl SimdPatternDetector {
                     _ => format!("// لا يمكن تحسينه")
                 }
             }
-            SimdPattern::ScalarOp { op, list, scalar } => {
+            SimdPattern::ScalarOp { op: _, list, scalar } => {
                 format!("simd.ضرب_عدد({}, {})", list, scalar)
             }
         }

@@ -228,6 +228,7 @@ pub struct PackageManager {
     packages_dir: PathBuf,
     
     /// مسار الكاش
+    #[allow(dead_code)] // سيُستخدم للتخزين المؤقت للحزم
     cache_dir: PathBuf,
     
     /// الحزم المثبتة
