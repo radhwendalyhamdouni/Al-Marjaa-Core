@@ -16,7 +16,19 @@ pub fn run(args: &[String], version: &str) {
         args::CliAction::Run(parsed) => {
             let parsed = *parsed;
 
-            // معالجة أوامر JIT
+            // معالجة أمر JIT Info
+            if parsed.options.jit_info {
+                commands::handle_jit_info();
+                return;
+            }
+
+            // معالجة أمر JIT Benchmark
+            if parsed.options.jit_bench {
+                commands::handle_jit_benchmark();
+                return;
+            }
+
+            // معالجة أوامر JIT Compiler
             if commands::handle_jit_command(&parsed.options, parsed.filename.as_deref()) {
                 return;
             }

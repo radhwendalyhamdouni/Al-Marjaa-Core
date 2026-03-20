@@ -343,4 +343,67 @@ pub fn handle_jit_command(options: &RunOptions, filename: Option<&str>) -> bool 
     true
 }
 
+/// معالجة أمر JIT Info - عرض معلومات JIT Compiler
+pub fn handle_jit_info() {
+    println!("{}", "════════════════════════════════════════════════════════════════".bright_cyan());
+    println!("{}", "        JIT Compiler - لغة المرجع".bright_cyan());
+    println!("{}", "════════════════════════════════════════════════════════════════".bright_cyan());
+    println!();
+    println!("{}", "🔥 المميزات:".bright_yellow());
+    println!("  • Tiered Compilation (مستويات متعددة من التحسين)");
+    println!("  • Hot Spot Detection (كشف النقاط الساخنة)");
+    println!("  • Tracing JIT (تتبع مسارات التنفيذ)");
+    println!("  • SIMD Operations (تعليمات المتجهات)");
+    println!("  • Inline Caching (تخزين مؤقت للدوال)");
+    println!("  • Escape Analysis (تحليل الهروب)");
+    println!();
+    println!("{}", "📊 الأوامر المتاحة:".bright_yellow());
+    println!("  almarjaa jit run <ملف>    تنفيذ ملف مع JIT");
+    println!("  almarjaa jit run <ملف> -t تفعيل Tiered Compilation");
+    println!("  almarjaa jit run <ملف> -b قياس الأداء");
+    println!("  almarjaa jit repl         REPL مع JIT");
+    println!("  almarjaa jit info         هذه المعلومات");
+    println!("  almarjaa jit benchmark    اختبارات الأداء");
+}
+
+/// معالجة أمر JIT Benchmark - تشغيل اختبارات الأداء
+pub fn handle_jit_benchmark() {
+    println!(
+        "{}",
+        crate::rtl("🚀 تشغيل اختبارات أداء JIT...").bright_cyan()
+    );
+
+    use almarjaa::bytecode::{quick_jit_test, run_all_jit_benchmarks};
+
+    // تشغيل اختبار سريع
+    let success = quick_jit_test();
+    println!();
+    println!(
+        "{}",
+        crate::rtl("═════════════════════════════════════").bright_green()
+    );
+    println!(
+        "{}",
+        crate::rtl("📊 نتائج اختبار JIT السريع")
+            .bright_green()
+            .bold()
+    );
+    println!(
+        "{}",
+        crate::rtl("═════════════════════════════════════").bright_green()
+    );
+    if success {
+        println!("  ✅ نجح الاختبار السريع");
+    } else {
+        println!("  ❌ فشل الاختبار السريع");
+    }
+
+    // تشغيل مجموعة الاختبارات الكاملة
+    let suite = run_all_jit_benchmarks();
+    println!();
+    println!("{}", crate::rtl("📊 نتائج مجموعة الاختبارات:").bright_cyan());
+    for result in &suite.results {
+        println!("  {} - {:?}", result.name, result);
+    }
+}
 

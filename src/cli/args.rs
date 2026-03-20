@@ -40,6 +40,8 @@ pub struct RunOptions {
     pub jit_repl: bool,
     pub jit_tiered: bool,
     pub jit_benchmark: bool,
+    pub jit_info: bool,
+    pub jit_bench: bool,
     pub jit_handled: bool, // للأوامر مثل info و benchmark
 }
 
@@ -84,6 +86,8 @@ pub fn parse_args(args: &[String]) -> CliAction {
         && !options.llvm_handled
         && !options.jit_run
         && !options.jit_repl
+        && !options.jit_info
+        && !options.jit_bench
         && !options.jit_handled
     {
         let mut i = 1;
@@ -484,76 +488,10 @@ fn parse_jit_subcommand(args: &[String], options: &mut RunOptions, filename: &mu
             options.jit_repl = true;
         }
         Some("info") => {
-            options.jit_handled = true;
-            println!(
-                "{}",
-                crate::rtl("══════════════════════════════════════════════════").bright_cyan()
-            );
-            println!(
-                "{}",
-                crate::rtl("        JIT Compiler - لغة المرجع")
-                    .bright_cyan()
-                    .bold()
-            );
-            println!(
-                "{}",
-                crate::rtl("══════════════════════════════════════════════════").bright_cyan()
-            );
-            println!();
-            println!("{}", crate::rtl("🔥 المميزات:").bright_yellow());
-            println!("  • Tiered Compilation (مستويات متعددة من التحسين)");
-            println!("  • Hot Spot Detection (كشف النقاط الساخنة)");
-            println!("  • Tracing JIT (تتبع مسارات التنفيذ)");
-            println!("  • SIMD Operations (تعليمات المتجهات)");
-            println!("  • Inline Caching (تخزين مؤقت للدوال)");
-            println!("  • Escape Analysis (تحليل الهروب)");
-            println!();
-            println!("{}", crate::rtl("📊 الأوامر المتاحة:").bright_yellow());
-            println!("  almarjaa jit run <ملف>    تنفيذ ملف مع JIT");
-            println!("  almarjaa jit run <ملف> -t تفعيل Tiered Compilation");
-            println!("  almarjaa jit run <ملف> -b قياس الأداء");
-            println!("  almarjaa jit repl         REPL مع JIT");
-            println!("  almarjaa jit info         هذه المعلومات");
+            options.jit_info = true;
         }
         Some("benchmark") | Some("test") => {
-            options.jit_handled = true;
-            println!(
-                "{}",
-                crate::rtl("🚀 تشغيل اختبارات أداء JIT...").bright_cyan()
-            );
-
-            use almarjaa::bytecode::{quick_jit_test, run_all_jit_benchmarks};
-
-            // تشغيل اختبار سريع
-            let success = quick_jit_test();
-            println!();
-            println!(
-                "{}",
-                crate::rtl("═════════════════════════════════════").bright_green()
-            );
-            println!(
-                "{}",
-                crate::rtl("📊 نتائج اختبار JIT السريع")
-                    .bright_green()
-                    .bold()
-            );
-            println!(
-                "{}",
-                crate::rtl("═════════════════════════════════════").bright_green()
-            );
-            if success {
-                println!("  ✅ نجح الاختبار السريع");
-            } else {
-                println!("  ❌ فشل الاختبار السريع");
-            }
-
-            // تشغيل مجموعة الاختبارات الكاملة
-            let suite = run_all_jit_benchmarks();
-            println!();
-            println!("{}", crate::rtl("📊 نتائج مجموعة الاختبارات:").bright_cyan());
-            for result in &suite.results {
-                println!("  {} - {:?}", result.name, result);
-            }
+            options.jit_bench = true;
         }
         Some(other) => {
             eprintln!(
