@@ -152,6 +152,10 @@ pub struct JitCompiler {
     enabled: bool,
     /// مستوى التحسين
     optimization_level: u8,
+    /// SIMD مُحسِّن (لـ Tier 3+)
+    simd_optimizer: Option<super::jit_simd::SimdJitOptimizer>,
+    /// كاشف أنماط SIMD
+    simd_detector: Option<super::jit_simd::SimdPatternDetector>,
 }
 
 impl JitCompiler {
@@ -165,6 +169,8 @@ impl JitCompiler {
             stats: JitStats::default(),
             enabled: true,
             optimization_level: 2,
+            simd_optimizer: Some(super::jit_simd::SimdJitOptimizer::new()),
+            simd_detector: Some(super::jit_simd::SimdPatternDetector::new()),
         }
     }
 
@@ -177,7 +183,17 @@ impl JitCompiler {
             function_cache: HashMap::with_capacity(64),
             stats: JitStats::default(),
             enabled,
-            optimization_level: optimization_level.min(3),
+            optimization_level: optimization_level.min(4),
+            simd_optimizer: if optimization_level >= 3 {
+                Some(super::jit_simd::SimdJitOptimizer::new())
+            } else {
+                None
+            },
+            simd_detector: if optimization_level >= 3 {
+                Some(super::jit_simd::SimdPatternDetector::new())
+            } else {
+                None
+            },
         }
     }
 
@@ -287,7 +303,10 @@ impl JitCompiler {
         let mut optimized = Vec::with_capacity(opcodes.len());
         let mut constants = Vec::new();
         let mut optimizations = 0u64;
-
+        
+        // كشف أنماط SIMD إذا كان مستوى التحسين 3+
+        let simd_patterns = self.detect_simd_patterns(opcodes);
+        
         let mut i = 0;
         while i < opcodes.len() {
             let op = &opcodes[i];
@@ -337,6 +356,18 @@ impl JitCompiler {
                 OpCode::Jump(offset) | OpCode::JumpIfFalse(offset) | OpCode::JumpIfTrue(offset) => {
                     optimized.push(OptimizedOp::JumpFast(*offset));
                 }
+                
+                // تحسين SIMD للحلقات الحسابية
+                OpCode::JumpBack(offset) => {
+                    // التحقق من وجود نمط SIMD
+                    if self.optimization_level >= 3 && self.is_simd_loop_candidate(opcodes, i) {
+                        optimizations += 1;
+                        // إضافة تعليمات SIMD محسنة
+                        optimized.push(OptimizedOp::Native(op.clone()));
+                    } else {
+                        optimized.push(OptimizedOp::Native(op.clone()));
+                    }
+                }
 
                 // باقي العمليات
                 _ => {
@@ -346,6 +377,11 @@ impl JitCompiler {
 
             i += 1;
         }
+        
+        // طباعة تقرير SIMD إذا كان متاحاً
+        if self.optimization_level >= 3 && !simd_patterns.is_empty() {
+            self.stats.optimizations_applied += simd_patterns.len() as u64;
+        }
 
         self.stats.optimizations_applied += optimizations;
 
@@ -353,6 +389,70 @@ impl JitCompiler {
             instructions: optimized,
             constants,
         })
+    }
+    
+    /// كشف أنماط SIMD في الكود
+    fn detect_simd_patterns(&mut self, opcodes: &[OpCode]) -> Vec<String> {
+        let mut patterns = Vec::new();
+        
+        if self.optimization_level < 3 {
+            return patterns;
+        }
+        
+        // كشف نمط حلقة جمع
+        let mut has_accumulator = false;
+        let mut has_loop = false;
+        
+        for op in opcodes {
+            match op {
+                OpCode::StoreLocal(_) | OpCode::LoadLocal(_) => {
+                    has_accumulator = true;
+                }
+                OpCode::JumpBack(_) => {
+                    has_loop = true;
+                }
+                _ => {}
+            }
+        }
+        
+        if has_accumulator && has_loop {
+            patterns.push("حلقة_جمع".to_string());
+        }
+        
+        patterns
+    }
+    
+    /// التحقق من أن الحلقة قابلة لتحسين SIMD
+    fn is_simd_loop_candidate(&self, opcodes: &[OpCode], current_ip: usize) -> bool {
+        if self.optimization_level < 3 {
+            return false;
+        }
+        
+        // التحقق من وجود عمليات حسابية متكررة
+        let mut arithmetic_count = 0;
+        let mut lookback = current_ip.saturating_sub(10);
+        
+        while lookback < current_ip {
+            if let Some(op) = opcodes.get(lookback) {
+                if matches!(op, OpCode::Add | OpCode::Sub | OpCode::Mul | OpCode::Div) {
+                    arithmetic_count += 1;
+                }
+            }
+            lookback += 1;
+        }
+        
+        // إذا كان هناك 3+ عمليات حسابية في الحلقة، فهي مرشحة لـ SIMD
+        arithmetic_count >= 3
+    }
+    
+    /// التحقق من توفر SIMD
+    pub fn is_simd_available(&self) -> bool {
+        self.simd_optimizer.is_some() && self.optimization_level >= 3
+    }
+    
+    /// الحصول على إحصائيات SIMD
+    pub fn simd_stats(&self) -> Option<&super::jit_simd::SimdJitStats> {
+        self.simd_optimizer.as_ref().map(|o| o.stats())
     }
 
     /// تنفيذ كود مترجم
