@@ -433,7 +433,9 @@ impl ModuleManager {
 
     /// تحليل الوحدة لاستخراج الصادرات والواردات
     fn parse_module(&self, module: &mut Module) -> Result<(), ModuleError> {
-        if let Some(ref source) = module.source {
+        // استخراج المصدر أولاً لتجنب borrow conflict
+        let source = module.source.clone();
+        if let Some(ref source) = source {
             // بحث بسيط عن تصديرات
             for line in source.lines() {
                 let trimmed = line.trim();

@@ -1,423 +1,248 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// نظام الأخطاء المتقدم - Advanced Error System
+// أخطاء متقدمة - Advanced Error Types
 // ═══════════════════════════════════════════════════════════════════════════════
-// يتضمن:
-// - Stack Trace كامل
-// - رسائل خطأ عربية واضحة
-// - اقتراحات الإصلاح
-// - تمييز الأخطاء في الكود
+// هذا الملف يوفر أنواع أخطاء إضافية متوافقة مع النظام الأساسي
 // ═══════════════════════════════════════════════════════════════════════════════
 
+use super::{AlMarjaaError, ErrorCode, SourceLocation, StackTrace};
 use std::fmt;
-use std::collections::VecDeque;
 
-/// موقع الخطأ في الكود
+/// خطأ وقت التشغيل
 #[derive(Debug, Clone)]
-pub struct SourceLocation {
-    pub file: String,
-    pub line: usize,
-    pub column: usize,
-    pub line_content: String,
-}
-
-/// إطار في Stack Trace
-#[derive(Debug, Clone)]
-pub struct StackFrame {
-    pub function_name: String,
-    pub location: SourceLocation,
-    pub is_native: bool,
-}
-
-/// Stack Trace كامل
-#[derive(Debug, Clone)]
-pub struct StackTrace {
-    pub frames: VecDeque<StackFrame>,
-    pub max_depth: usize,
-}
-
-impl StackTrace {
-    pub fn new() -> Self {
-        StackTrace {
-            frames: VecDeque::new(),
-            max_depth: 1000,
-        }
-    }
-    
-    pub fn push_frame(&mut self, frame: StackFrame) {
-        if self.frames.len() >= self.max_depth {
-            self.frames.pop_front();
-        }
-        self.frames.push_back(frame);
-    }
-    
-    pub fn pop_frame(&mut self) -> Option<StackFrame> {
-        self.frames.pop_back()
-    }
-    
-    pub fn depth(&self) -> usize {
-        self.frames.len()
-    }
-    
-    /// تنسيق Stack Trace للعرض
-    pub fn format(&self) -> String {
-        let mut output = String::new();
-        output.push_str("════════════════════════════════════════════════════════════\n");
-        output.push_str("                    Stack Trace                            \n");
-        output.push_str("════════════════════════════════════════════════════════════\n\n");
-        
-        if self.frames.is_empty() {
-            output.push_str("  (لا توجد معلومات Stack Trace)\n");
-            return output;
-        }
-        
-        for (i, frame) in self.frames.iter().rev().enumerate() {
-            let arrow = if i == 0 { "→" } else { " " };
-            
-            if frame.is_native {
-                output.push_str(&format!(
-                    "  {} [{}] {} (دالة أصلية)\n",
-                    arrow,
-                    self.frames.len() - i,
-                    frame.function_name
-                ));
-            } else {
-                output.push_str(&format!(
-                    "  {} [{}] {} في السطر {}، العمود {}\n",
-                    arrow,
-                    self.frames.len() - i,
-                    frame.function_name,
-                    frame.location.line,
-                    frame.location.column
-                ));
-                
-                if !frame.location.line_content.is_empty() {
-                    output.push_str(&format!(
-                        "       │ {}\n",
-                        frame.location.line_content.trim()
-                    ));
-                    output.push_str(&format!(
-                        "       │ {}⌃\n",
-                        " ".repeat(frame.location.column.saturating_sub(1))
-                    ));
-                }
-            }
-        }
-        
-        output
-    }
-}
-
-/// نوع الخطأ
-#[derive(Debug, Clone, PartialEq)]
-pub enum ErrorType {
-    // أخطاء لغوية
-    LexerError,
-    SyntaxError,
-    
-    // أخطاء وقت التشغيل
-    RuntimeError,
-    TypeError,
-    NameError,
-    IndexError,
-    KeyError,
-    AttributeError,
-    ValueError,
-    ZeroDivisionError,
-    OverflowError,
-    RecursionError,
-    MemoryError,
-    
-    // أخطاء النظام
-    IOError,
-    FileNotFoundError,
-    PermissionError,
-    NetworkError,
-    
-    // أخطاء المنطق
-    AssertionError,
-    NotImplementedError,
-    
-    // خطأ عام
-    GenericError,
-}
-
-impl ErrorType {
-    /// الحصول على اسم الخطأ بالعربية
-    pub fn arabic_name(&self) -> &'static str {
-        match self {
-            ErrorType::LexerError => "خطأ لغوي",
-            ErrorType::SyntaxError => "خطأ نحوي",
-            ErrorType::RuntimeError => "خطأ وقت التشغيل",
-            ErrorType::TypeError => "خطأ في النوع",
-            ErrorType::NameError => "خطأ في الاسم",
-            ErrorType::IndexError => "خطأ في الفهرس",
-            ErrorType::KeyError => "خطأ في المفتاح",
-            ErrorType::AttributeError => "خطأ في الخاصية",
-            ErrorType::ValueError => "خطأ في القيمة",
-            ErrorType::ZeroDivisionError => "خطأ قسمة على صفر",
-            ErrorType::OverflowError => "خطأ تجاوز السعة",
-            ErrorType::RecursionError => "خطأ عودية عميقة",
-            ErrorType::MemoryError => "خطأ في الذاكرة",
-            ErrorType::IOError => "خطأ في الإدخال/الإخراج",
-            ErrorType::FileNotFoundError => "ملف غير موجود",
-            ErrorType::PermissionError => "خطأ في الصلاحيات",
-            ErrorType::NetworkError => "خطأ في الشبكة",
-            ErrorType::AssertionError => "خطأ تأكيد",
-            ErrorType::NotImplementedError => "غير مطبق",
-            ErrorType::GenericError => "خطأ",
-        }
-    }
-    
-    /// الحصول على رمز الخطأ
-    pub fn code(&self) -> &'static str {
-        match self {
-            ErrorType::LexerError => "E001",
-            ErrorType::SyntaxError => "E002",
-            ErrorType::RuntimeError => "E003",
-            ErrorType::TypeError => "E004",
-            ErrorType::NameError => "E005",
-            ErrorType::IndexError => "E006",
-            ErrorType::KeyError => "E007",
-            ErrorType::AttributeError => "E008",
-            ErrorType::ValueError => "E009",
-            ErrorType::ZeroDivisionError => "E010",
-            ErrorType::OverflowError => "E011",
-            ErrorType::RecursionError => "E012",
-            ErrorType::MemoryError => "E013",
-            ErrorType::IOError => "E014",
-            ErrorType::FileNotFoundError => "E015",
-            ErrorType::PermissionError => "E016",
-            ErrorType::NetworkError => "E017",
-            ErrorType::AssertionError => "E018",
-            ErrorType::NotImplementedError => "E019",
-            ErrorType::GenericError => "E999",
-        }
-    }
-}
-
-/// اقتراح إصلاح
-#[derive(Debug, Clone)]
-pub struct FixSuggestion {
+pub struct RuntimeError {
+    /// رسالة الخطأ
     pub message: String,
-    pub suggested_code: Option<String>,
-}
-
-/// خطأ متقدم مع كل المعلومات
-#[derive(Debug, Clone)]
-pub struct MarjaaError {
-    pub error_type: ErrorType,
-    pub message: String,
+    /// موقع الخطأ
     pub location: Option<SourceLocation>,
-    pub stack_trace: StackTrace,
-    pub suggestions: Vec<FixSuggestion>,
-    pub help_text: Option<String>,
+    /// Stack Trace
+    pub stack_trace: Option<StackTrace>,
 }
 
-impl MarjaaError {
-    pub fn new(error_type: ErrorType, message: String) -> Self {
-        MarjaaError {
-            error_type,
-            message,
+impl RuntimeError {
+    /// إنشاء خطأ وقت تشغيل جديد
+    pub fn new(message: impl Into<String>) -> Self {
+        RuntimeError {
+            message: message.into(),
             location: None,
-            stack_trace: StackTrace::new(),
-            suggestions: Vec::new(),
-            help_text: None,
+            stack_trace: None,
         }
     }
-    
-    pub fn with_location(mut self, location: SourceLocation) -> Self {
+
+    /// إضافة موقع
+    pub fn at(mut self, location: SourceLocation) -> Self {
         self.location = Some(location);
         self
     }
-    
-    pub fn with_stack_trace(mut self, trace: StackTrace) -> Self {
-        self.stack_trace = trace;
+
+    /// إضافة Stack Trace
+    pub fn with_trace(mut self, trace: StackTrace) -> Self {
+        self.stack_trace = Some(trace);
         self
     }
-    
-    pub fn with_suggestion(mut self, message: &str, code: Option<&str>) -> Self {
-        self.suggestions.push(FixSuggestion {
-            message: message.to_string(),
-            suggested_code: code.map(|c| c.to_string()),
-        });
-        self
-    }
-    
-    pub fn with_help(mut self, help: &str) -> Self {
-        self.help_text = Some(help.to_string());
-        self
-    }
-    
-    /// تنسيق الخطأ للعرض
-    pub fn format(&self) -> String {
-        let mut output = String::new();
-        
-        // العنوان الرئيسي
-        output.push_str("\n");
-        output.push_str("╔══════════════════════════════════════════════════════════════╗\n");
-        output.push_str(&format!(
-            "║  ❌ {} [{}]\n",
-            self.error_type.arabic_name(),
-            self.error_type.code()
-        ));
-        output.push_str("╚══════════════════════════════════════════════════════════════╝\n\n");
-        
-        // الرسالة الرئيسية
-        output.push_str(&format!("الرسالة: {}\n\n", self.message));
-        
-        // الموقع
-        if let Some(ref loc) = self.location {
-            output.push_str(&format!(
-                "الموقع: {}:{}:{}\n",
-                loc.file, loc.line, loc.column
-            ));
-            
-            if !loc.line_content.is_empty() {
-                output.push_str("\n");
-                output.push_str(&format!("  {} │ {}\n", loc.line, loc.line_content));
-                output.push_str(&format!(
-                    "    │ {}^\n",
-                    " ".repeat(loc.column.saturating_sub(1))
-                ));
-            }
+
+    /// تحويل إلى AlMarjaaError
+    pub fn into_marjaa_error(self, code: ErrorCode) -> AlMarjaaError {
+        let mut error = AlMarjaaError::new(code, self.message);
+        if let Some(loc) = self.location {
+            error = error.at(loc);
         }
-        
-        // Stack Trace
-        if !self.stack_trace.frames.is_empty() {
-            output.push_str(&self.stack_trace.format());
+        if let Some(trace) = self.stack_trace {
+            error = error.with_trace(trace);
         }
-        
-        // الاقتراحات
-        if !self.suggestions.is_empty() {
-            output.push_str("\n💡 اقتراحات الإصلاح:\n");
-            for (i, suggestion) in self.suggestions.iter().enumerate() {
-                output.push_str(&format!("   {}. {}\n", i + 1, suggestion.message));
-                if let Some(ref code) = suggestion.suggested_code {
-                    output.push_str(&format!("      مثال: {}\n", code));
-                }
-            }
-        }
-        
-        // نص المساعدة
-        if let Some(ref help) = self.help_text {
-            output.push_str(&format!("\nℹ️ مساعدة: {}\n", help));
-        }
-        
-        output
+        error
     }
 }
 
-impl fmt::Display for MarjaaError {
+impl fmt::Display for RuntimeError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.format())
+        write!(f, "{}", self.message)?;
+        if let Some(ref loc) = self.location {
+            write!(f, " ({}:{}:{})", loc.file, loc.line, loc.column)?;
+        }
+        Ok(())
     }
 }
 
-impl std::error::Error for MarjaaError {}
+impl std::error::Error for RuntimeError {}
+
+/// خطأ في التحليل اللغوي
+#[derive(Debug, Clone)]
+pub struct LexerError {
+    /// رسالة الخطأ
+    pub message: String,
+    /// موقع الخطأ
+    pub location: SourceLocation,
+}
+
+impl LexerError {
+    /// إنشاء خطأ تحليل لغوي
+    pub fn new(message: impl Into<String>, line: usize, column: usize) -> Self {
+        LexerError {
+            message: message.into(),
+            location: SourceLocation::simple(line, column),
+        }
+    }
+
+    /// إنشاء مع ملف
+    pub fn with_file(mut self, file: impl Into<String>) -> Self {
+        self.location.file = file.into();
+        self
+    }
+
+    /// تحويل إلى AlMarjaaError
+    pub fn into_marjaa_error(self, code: ErrorCode) -> AlMarjaaError {
+        AlMarjaaError::new(code, self.message).at(self.location)
+    }
+}
+
+impl fmt::Display for LexerError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} (السطر {}، العمود {})",
+            self.message, self.location.line, self.location.column
+        )
+    }
+}
+
+impl std::error::Error for LexerError {}
+
+/// خطأ في التحليل النحوي
+#[derive(Debug, Clone)]
+pub struct ParseError {
+    /// رسالة الخطأ
+    pub message: String,
+    /// موقع الخطأ
+    pub location: SourceLocation,
+    /// الرمز المتوقع
+    pub expected: Option<String>,
+    /// الرمز الموجود
+    pub found: Option<String>,
+}
+
+impl ParseError {
+    /// إنشاء خطأ تحليل نحوي
+    pub fn new(message: impl Into<String>, line: usize, column: usize) -> Self {
+        ParseError {
+            message: message.into(),
+            location: SourceLocation::simple(line, column),
+            expected: None,
+            found: None,
+        }
+    }
+
+    /// إضافة المتوقع والموجود
+    pub fn with_expected_found(mut self, expected: &str, found: &str) -> Self {
+        self.expected = Some(expected.to_string());
+        self.found = Some(found.to_string());
+        self
+    }
+
+    /// تحويل إلى AlMarjaaError
+    pub fn into_marjaa_error(self) -> AlMarjaaError {
+        let mut error = AlMarjaaError::new(ErrorCode::E200, self.message).at(self.location);
+
+        if let (Some(expected), Some(_found)) = (self.expected, self.found) {
+            error = error.suggest_with_code(
+                &format!("أضف '{}' في الموضع المناسب", expected),
+                &expected,
+            );
+        }
+
+        error
+    }
+}
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{} (السطر {}، العمود {})",
+            self.message, self.location.line, self.location.column
+        )
+    }
+}
+
+impl std::error::Error for ParseError {}
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// دوال إنشاء الأخطاء الشائعة
+// دوال إنشاء الأخطاء
 // ═══════════════════════════════════════════════════════════════════════════════
+
+/// إنشاء خطأ متغير غير معرف
+pub fn undefined_variable_error(name: &str, line: usize, column: usize) -> AlMarjaaError {
+    AlMarjaaError::new(ErrorCode::E300, format!("المتغير '{}' غير معرف", name))
+        .at_simple(line, column)
+        .suggest_with_code("هل تقصد تعريف المتغير؟", &format!("متغير {} = قيمة", name))
+        .suggest_simple("تحقق من كتابة الاسم بشكل صحيح")
+        .with_help("يجب تعريف المتغير قبل استخدامه")
+}
 
 /// إنشاء خطأ نوع
-pub fn type_error(expected: &str, got: &str) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::TypeError,
+pub fn type_error_error(expected: &str, got: &str, line: usize, column: usize) -> AlMarjaaError {
+    AlMarjaaError::new(
+        ErrorCode::E301,
         format!("متوقع نوع '{}'، لكن وجد '{}'", expected, got),
     )
+    .at_simple(line, column)
     .with_help("تأكد من أن القيمة من النوع الصحيح قبل استخدامها")
 }
 
-/// إنشاء خطأ اسم
-pub fn name_error(name: &str) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::NameError,
-        format!("الاسم '{}' غير معرف", name),
-    )
-    .with_suggestion("هل قمت بتعريف المتغير؟", Some(&format!("متغير {} = قيمة", name)))
-    .with_suggestion("هل هناك خطأ إملائي؟", None)
+/// إنشاء خطأ قسمة على صفر
+pub fn division_by_zero_error(line: usize, column: usize) -> AlMarjaaError {
+    AlMarjaaError::new(ErrorCode::E302, "لا يمكن القسمة على صفر")
+        .at_simple(line, column)
+        .with_help("تحقق من أن المقسوم عليه ليس صفراً قبل إجراء القسمة")
+        .suggest_with_code(
+            "أضف شرطاً للتحقق",
+            "إذا مقسوم_عليه != 0: نتيجة = مقسوم / مقسوم_عليه",
+        )
 }
 
-/// إنشاء خطأ فهرس
-pub fn index_error(index: usize, length: usize) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::IndexError,
-        format!("الفهرس {} خارج النطاق (الطول: {})", index, length),
+/// إنشاء خطأ فهرس خارج النطاق
+pub fn index_error(index: i64, length: usize, line: usize, column: usize) -> AlMarjaaError {
+    AlMarjaaError::new(
+        ErrorCode::E303,
+        format!("الفهرس {} خارج النطاق [0..{}]", index, length.saturating_sub(1)),
     )
-    .with_help("الفهرس يجب أن يكون بين 0 والطول - 1")
+    .at_simple(line, column)
+    .suggest_with_code(
+        "استخدم فهرساً صالحاً",
+        &format!("استخدم فهرساً بين 0 و {}", length.saturating_sub(1)),
+    )
+    .with_help("الفهارس تبدأ من 0 وتنتهي عند الطول - 1")
 }
 
-/// إنشاء خطأ مفتاح
-pub fn key_error(key: &str) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::KeyError,
+/// إنشاء خطأ مفتاح غير موجود
+pub fn key_error(key: &str, line: usize, column: usize) -> AlMarjaaError {
+    AlMarjaaError::new(
+        ErrorCode::E306,
         format!("المفتاح '{}' غير موجود في القاموس", key),
     )
-    .with_suggestion("تحقق من وجود المفتاح قبل الوصول إليه", None)
-}
-
-/// إنشاء خطأ قسمة على صفر
-pub fn zero_division_error() -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::ZeroDivisionError,
-        "لا يمكن القسمة على صفر".to_string(),
+    .at_simple(line, column)
+    .suggest_with_code(
+        "تحقق من وجود المفتاح أولاً",
+        &format!("إذا \"{}\" في قاموس: قيمة = قاموس[\"{}\"]", key, key),
     )
-    .with_help("تحقق من أن المقسوم عليه ليس صفراً قبل القسمة")
+    .with_help("يمكنك استخدام دالة 'يحتوي' للتحقق من وجود المفتاح")
 }
 
 /// إنشاء خطأ عودية عميقة
-pub fn recursion_error(max_depth: usize) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::RecursionError,
+pub fn recursion_error(max_depth: usize, line: usize, column: usize) -> AlMarjaaError {
+    AlMarjaaError::new(
+        ErrorCode::E308,
         format!("تجاوز الحد الأقصى لعمق العودية ({})", max_depth),
     )
-    .with_help("حاول تحويل العودية إلى حلقة تكرارية أو زيادة الحد الأقصى")
-}
-
-/// إنشاء خطأ سعة
-pub fn overflow_error(operation: &str) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::OverflowError,
-        format!("تجاوز السعة في العملية: {}", operation),
-    )
-    .with_help("القيمة كبيرة جداً للنوع المستخدم")
-}
-
-/// إنشاء خطأ نحوي
-pub fn syntax_error(message: &str, line: usize, column: usize, source: &str) -> MarjaaError {
-    let line_content = source.lines()
-        .nth(line.saturating_sub(1))
-        .unwrap_or("")
-        .to_string();
-    
-    MarjaaError::new(
-        ErrorType::SyntaxError,
-        message.to_string(),
-    )
-    .with_location(SourceLocation {
-        file: "البرنامج".to_string(),
-        line,
-        column,
-        line_content,
-    })
+    .at_simple(line, column)
+    .suggest_simple("حول العودية إلى حلقة تكرارية")
+    .with_help("العودية العميقة قد تسبب استنفاد الذاكرة")
 }
 
 /// إنشاء خطأ تأكيد
-pub fn assertion_error(message: &str) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::AssertionError,
-        format!("فشل التأكيد: {}", message),
-    )
-}
-
-/// إنشاء خطأ ملف غير موجود
-pub fn file_not_found_error(path: &str) -> MarjaaError {
-    MarjaaError::new(
-        ErrorType::FileNotFoundError,
-        format!("الملف '{}' غير موجود", path),
-    )
-    .with_suggestion("تحقق من مسار الملف", None)
-    .with_suggestion("تأكد من أن الملف موجود في المجلد الصحيح", None)
+pub fn assertion_error(message: &str, line: usize, column: usize) -> AlMarjaaError {
+    AlMarjaaError::new(ErrorCode::E500, format!("فشل التأكيد: {}", message))
+        .at_simple(line, column)
+        .with_help("التأكيد يفشل عندما يكون الشرط خطأ")
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -427,61 +252,36 @@ pub fn file_not_found_error(path: &str) -> MarjaaError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
-    fn test_error_formatting() {
-        let error = MarjaaError::new(
-            ErrorType::TypeError,
-            "متوقع رقم، وجد نص".to_string(),
-        )
-        .with_help("حول النص إلى رقم باستخدام دالة رقم()");
-        
-        let formatted = error.format();
-        assert!(formatted.contains("خطأ في النوع"));
-        assert!(formatted.contains("متوقع رقم"));
-        println!("{}", formatted);
+    fn test_runtime_error() {
+        let error = RuntimeError::new("خطأ في وقت التشغيل")
+            .at(SourceLocation::new("test.mrj", 10, 5));
+
+        assert!(error.location.is_some());
+        println!("{}", error);
     }
-    
+
     #[test]
-    fn test_stack_trace() {
-        let mut trace = StackTrace::new();
-        
-        trace.push_frame(StackFrame {
-            function_name: "دالة_رئيسية".to_string(),
-            location: SourceLocation {
-                file: "برنامج.mrj".to_string(),
-                line: 10,
-                column: 5,
-                line_content: "نتيجة = حساب(5)".to_string(),
-            },
-            is_native: false,
-        });
-        
-        trace.push_frame(StackFrame {
-            function_name: "حساب".to_string(),
-            location: SourceLocation {
-                file: "برنامج.mrj".to_string(),
-                line: 25,
-                column: 3,
-                line_content: "أرجع س / 0".to_string(),
-            },
-            is_native: false,
-        });
-        
-        let formatted = trace.format();
-        assert!(formatted.contains("حساب"));
-        println!("{}", formatted);
+    fn test_lexer_error() {
+        let error = LexerError::new("رمز غير معروف", 5, 10);
+        assert_eq!(error.location.line, 5);
+        assert_eq!(error.location.column, 10);
     }
-    
+
     #[test]
-    fn test_helper_functions() {
-        let error = name_error("متغير_غير_موجود");
-        assert!(error.suggestions.len() > 0);
-        
-        let error = type_error("رقم", "نص");
-        assert_eq!(error.error_type, ErrorType::TypeError);
-        
-        let error = index_error(10, 5);
-        assert!(error.message.contains("10"));
+    fn test_parse_error() {
+        let error = ParseError::new("توقع '؛'", 10, 5)
+            .with_expected_found("؛", "نهاية السطر");
+
+        assert!(error.expected.is_some());
+        assert!(error.found.is_some());
+    }
+
+    #[test]
+    fn test_error_conversion() {
+        let runtime = RuntimeError::new("خطأ").at(SourceLocation::simple(1, 1));
+        let marjaa = runtime.into_marjaa_error(ErrorCode::E300);
+        assert_eq!(marjaa.code, ErrorCode::E300);
     }
 }

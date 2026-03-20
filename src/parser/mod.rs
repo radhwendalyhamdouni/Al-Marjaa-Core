@@ -138,7 +138,7 @@ impl Parser {
             }
 
             Err(ParseError {
-                message: rich_error.format("<النص>"),
+                message: rich_error.format_with_file("<النص>"),
                 line: token.line,
                 column: token.column,
             })
