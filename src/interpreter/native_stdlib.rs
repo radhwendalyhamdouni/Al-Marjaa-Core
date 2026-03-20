@@ -484,7 +484,7 @@ pub fn define_math(env: &mut Environment) {
             name: "asin".to_string(),
             func: |a| {
                 let n = a[0].borrow().to_number()?;
-                if n < -1.0 || n > 1.0 {
+                if !(-1.0..=1.0).contains(&n) {
                     return Err("asin: input must be between -1 and 1".into());
                 }
                 Ok(Rc::new(RefCell::new(Value::Number(n.asin()))))
@@ -500,7 +500,7 @@ pub fn define_math(env: &mut Environment) {
             name: "acos".to_string(),
             func: |a| {
                 let n = a[0].borrow().to_number()?;
-                if n < -1.0 || n > 1.0 {
+                if !(-1.0..=1.0).contains(&n) {
                     return Err("acos: input must be between -1 and 1".into());
                 }
                 Ok(Rc::new(RefCell::new(Value::Number(n.acos()))))
