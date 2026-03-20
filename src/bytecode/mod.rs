@@ -38,6 +38,10 @@ pub mod type_inference;
 pub mod vm;
 pub mod wasm_target;
 
+// التحسينات الجديدة للإصدار 4.0
+pub mod register_vm;  // Register-based VM (أسرع 2-3x)
+pub mod ffi;         // Foreign Function Interface
+
 // إعادة تصدير الأنواع الرئيسية
 pub use benchmarks::{print_benchmark_results, run_all_benchmarks, BenchmarkResult};
 pub use compiler::{CompileResult, Compiler};
@@ -122,6 +126,21 @@ pub use complete_v2_jit::{
     AsyncTask, AsyncRuntime as V2AsyncRuntime, CallFrame, CompleteV2JitCompiler, CompiledFunction as V2CompiledFunction,
     CompiledInstruction, ExecutionResult as V2ExecutionResult, FunctionInfo, JitStats as V2JitStats,
     TaskStatus, TierLevel as V2TierLevel,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// تصدير Register VM (أسرع 2-3x من Stack VM)
+// ═══════════════════════════════════════════════════════════════════════════════
+pub use register_vm::{
+    RegChunk, RegExecutionResult, RegOp, RegVMStats, RegisterVM,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// تصدير FFI (Foreign Function Interface)
+// ═══════════════════════════════════════════════════════════════════════════════
+pub use ffi::{
+    CallbackId, CallbackManager, FfiFunction, FfiLibrary, FfiManager, FfiSignature, FfiStats,
+    FfiType, FfiValue, NativeFunction,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
