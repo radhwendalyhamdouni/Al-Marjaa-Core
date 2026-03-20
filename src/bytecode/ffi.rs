@@ -10,14 +10,14 @@ use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_double, c_int, c_void};
 use std::ptr;
 
-use crate::interpreter::value::{SharedValue, Value};
+use crate::interpreter::value::Value;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // أنواع FFI
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /// نوع بيانات FFI
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum FfiType {
     /// void
     Void,
@@ -107,7 +107,6 @@ impl FfiSignature {
 
 /// قيمة FFI للتبادل مع C
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
 pub union FfiValue {
     pub int32: c_int,
     pub int64: i64,
@@ -310,7 +309,7 @@ impl FfiManager {
         
         // malloc-like
         self.register_native("تخصيص", vec!["حجم".to_string()], |args| {
-            let size = args.first().map(|a| a.int64 as usize).unwrap_or(0);
+            let size = unsafe { args.first().map(|a| a.int64 as usize).unwrap_or(0) };
             if size > 0 && size < 1024 * 1024 * 1024 { // حد أقصى 1GB
                 let ptr = unsafe { libc::malloc(size) };
                 FfiValue { pointer: ptr }
@@ -333,9 +332,9 @@ impl FfiManager {
         
         // memcpy
         self.register_native("نسخ_ذاكرة", vec!["هدف".to_string(), "مصدر".to_string(), "حجم".to_string()], |args| {
-            let dest = args.get(0).map(|a| a.pointer).unwrap_or(ptr::null_mut());
-            let src = args.get(1).map(|a| a.pointer).unwrap_or(ptr::null_mut());
-            let size = args.get(2).map(|a| a.int64 as usize).unwrap_or(0);
+            let dest = unsafe { args.get(0).map(|a| a.pointer).unwrap_or(ptr::null_mut()) };
+            let src = unsafe { args.get(1).map(|a| a.pointer).unwrap_or(ptr::null_mut()) };
+            let size = unsafe { args.get(2).map(|a| a.int64 as usize).unwrap_or(0) };
             
             if !dest.is_null() && !src.is_null() && size > 0 {
                 unsafe {
@@ -665,7 +664,7 @@ mod tests {
         let mut manager = FfiManager::new();
         
         manager.register_native("مضاعفة", vec!["عدد".to_string()], |args| {
-            let n = args.first().map(|a| a.float64).unwrap_or(0.0);
+            let n = unsafe { args.first().map(|a| a.float64).unwrap_or(0.0) };
             FfiValue { float64: n * 2.0 }
         });
         

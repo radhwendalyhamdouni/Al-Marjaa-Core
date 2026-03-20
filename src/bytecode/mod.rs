@@ -148,7 +148,7 @@ pub use ffi::{
 // تصدير SIMD Operations
 // ═══════════════════════════════════════════════════════════════════════════════
 pub use simd::{
-    SimdOp, SimdProcessor, SimdResult, SimdStats,
+    SimdOp, SimdResult,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

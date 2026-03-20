@@ -377,14 +377,14 @@ impl ModuleManager {
         self.search_paths.push(path.to_path_buf());
     }
     
-    /// تحميل وحدة
-    pub fn load_module(&mut self, name: &str) -> Result<&Module, ModuleError> {
+    /// تحميل وحدة (تعيد اسم الوحدة كمرجع)
+    pub fn load_module(&mut self, name: &str) -> Result<String, ModuleError> {
         let start = std::time::Instant::now();
         
         // التحقق من الكاش
-        if let Some(module) = self.modules.get(name) {
+        if self.modules.contains_key(name) {
             self.stats.cache_hits += 1;
-            return Ok(module);
+            return Ok(name.to_string());
         }
         
         // التحقق من التبعية الدائرية
@@ -411,7 +411,7 @@ impl ModuleManager {
             .map_err(|e| ModuleError::ParseError {
                 file: path.display().to_string(),
                 message: e.message,
-                line: e.position.line,
+                line: e.line,
             })?;
         
         // استخراج الواردات والصادرات
@@ -419,11 +419,14 @@ impl ModuleManager {
         let exports = self.extract_exports(&program);
         
         // ترجمة الكود
-        let chunk = crate::bytecode::Compiler::compile(&program)
-            .map_err(|e| ModuleError::CompileError {
+        let compile_result = crate::bytecode::Compiler::compile(&program);
+        if !compile_result.errors.is_empty() {
+            return Err(ModuleError::CompileError {
                 module: name.to_string(),
-                message: e.errors.join("\n"),
-            })?;
+                message: compile_result.errors.join("\n"),
+            });
+        }
+        let chunk = compile_result.chunk;
         
         // إنشاء الوحدة
         let id = ModuleId::from_path(&path);
@@ -440,7 +443,7 @@ impl ModuleManager {
         self.stats.modules_loaded += 1;
         self.stats.total_load_time_ms += start.elapsed().as_millis() as u64;
         
-        Ok(self.modules.get(name).unwrap())
+        Ok(name.to_string())
     }
     
     /// البحث عن مسار الوحدة

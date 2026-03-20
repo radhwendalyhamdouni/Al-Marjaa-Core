@@ -9,7 +9,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use super::opcodes::Chunk;
 use crate::interpreter::value::{Environment, SharedValue, Value};
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -695,7 +694,8 @@ impl RegisterVM {
                     self.stats.cache_misses += 1;
                     let chunk = self.chunk.as_ref().unwrap();
                     if let Some(name) = chunk.get_string(*name_idx) {
-                        match self.globals.borrow().get(name) {
+                        let value = self.globals.borrow().get(name).as_ref().map(|v| Rc::clone(v));
+                        match value {
                             Some(v) => {
                                 self.global_cache.insert(*name_idx, Rc::clone(&v));
                                 self.set_reg(*dest, v);
@@ -970,12 +970,13 @@ impl RegisterVM {
                 
                 if let Some(prop) = chunk.get_string(*prop_idx) {
                     let obj = self.get_reg(*obj_reg);
+                    let obj_val = obj.borrow().clone();
                     
-                    if let Value::Dictionary(ref dict) = &*obj.borrow() {
+                    if let Value::Dictionary(ref dict) = obj_val {
                         let mut new_dict = dict.clone();
                         new_dict.insert(prop.to_string(), val);
                         self.set_reg(*obj_reg, Rc::new(RefCell::new(Value::Dictionary(new_dict))));
-                    } else if let Value::Instance { ref fields, .. } = &*obj.borrow() {
+                    } else if let Value::Instance { ref fields, .. } = obj_val {
                         fields.borrow_mut().insert(prop.to_string(), val);
                     } else {
                         return RegExecutionResult::Error("لا يمكن تعيين الخاصية".into());
@@ -988,7 +989,9 @@ impl RegisterVM {
                 let chunk = self.chunk.as_ref().unwrap();
                 
                 if let Some(func_name) = chunk.get_string(*func_idx) {
-                    match self.globals.borrow().get(func_name) {
+                    let func_val = self.globals.borrow().get(func_name).as_ref().map(|v| Rc::clone(v));
+                    
+                    match func_val {
                         Some(v) => {
                             if let Value::NativeFunction { func, .. } = &*v.borrow() {
                                 let arg_vals: Vec<SharedValue> = args.iter()
