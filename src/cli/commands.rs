@@ -343,24 +343,4 @@ pub fn handle_jit_command(options: &RunOptions, filename: Option<&str>) -> bool 
     true
 }
 
-/// معالجة أوامر JIT Info
-pub fn handle_jit_info() {
-    println!("{}", "════════════════════════════════════════════════════════════════".bright_cyan());
-    println!("{}", "        JIT Compiler - لغة المرجع".bright_cyan());
-    println!("{}", "════════════════════════════════════════════════════════════════".bright_cyan());
-    println!();
-    println!("{}", "🔥 المميزات:".bright_yellow());
-    println!("  • Tiered Compilation (مستويات متعددة من التحسين)");
-    println!("  • Hot Spot Detection (كشف النقاط الساخنة)");
-    println!("  • Tracing JIT (تتبع مسارات التنفيذ)");
-    println!("  • SIMD Operations (تعليمات المتجهات)");
-    println!("  • Inline Caching (تخزين مؤقت للدوال)");
-    println!("  • Escape Analysis (تحليل الهروب)");
-    println!();
-    println!("{}", "📊 الأوامر المتاحة:".bright_yellow());
-    println!("  almarjaa jit run <ملف>    تنفيذ ملف مع JIT");
-    println!("  almarjaa jit run <ملف> -t تفعيل Tiered Compilation");
-    println!("  almarjaa jit run <ملف> -b قياس الأداء");
-    println!("  almarjaa jit repl         REPL مع JIT");
-    println!("  almarjaa jit info         هذه المعلومات");
-}
+
