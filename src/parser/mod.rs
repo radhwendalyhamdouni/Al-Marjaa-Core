@@ -1891,7 +1891,7 @@ impl Parser {
 
     fn is_lambda(&self) -> bool {
         let mut pos = self.current;
-        let mut depth = 0i32;
+        let mut depth = 1i32; // نبدأ بـ 1 لأننا بالفعل تجاوزنا '(' الأول
 
         while pos < self.tokens.len() {
             match &self.tokens[pos].token_type {

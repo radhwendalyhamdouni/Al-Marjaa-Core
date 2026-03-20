@@ -366,6 +366,339 @@ pub fn define_math(env: &mut Environment) {
         },
         false,
     );
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // الأسماء الإنجليزية للدوال الرياضية (أسماء مستعارة للتوافق)
+    // English aliases for math functions
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // sqrt - جذر تربيعي
+    env.define(
+        "sqrt",
+        Value::NativeFunction {
+            name: "sqrt".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => {
+                    if *n < 0.0 {
+                        return Err("sqrt: cannot calculate square root of negative number".into());
+                    }
+                    Ok(Rc::new(RefCell::new(Value::Number(n.sqrt()))))
+                }
+                _ => Err("sqrt requires a number".into()),
+            },
+        },
+        false,
+    );
+
+    // log - لوغاريتم طبيعي
+    env.define(
+        "log",
+        Value::NativeFunction {
+            name: "log".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n <= 0.0 {
+                    return Err("log: cannot calculate logarithm of non-positive number".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.ln()))))
+            },
+        },
+        false,
+    );
+
+    // log10 - لوغاريتم عشري
+    env.define(
+        "log10",
+        Value::NativeFunction {
+            name: "log10".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n <= 0.0 {
+                    return Err("log10: cannot calculate logarithm of non-positive number".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.log10()))))
+            },
+        },
+        false,
+    );
+
+    // log2 - لوغاريتم ثنائي
+    env.define(
+        "log2",
+        Value::NativeFunction {
+            name: "log2".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n <= 0.0 {
+                    return Err("log2: cannot calculate logarithm of non-positive number".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.log2()))))
+            },
+        },
+        false,
+    );
+
+    // sin - جيب
+    env.define(
+        "sin",
+        Value::NativeFunction {
+            name: "sin".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.sin()))))
+            },
+        },
+        false,
+    );
+
+    // cos - جيب تمام
+    env.define(
+        "cos",
+        Value::NativeFunction {
+            name: "cos".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.cos()))))
+            },
+        },
+        false,
+    );
+
+    // tan - ظل
+    env.define(
+        "tan",
+        Value::NativeFunction {
+            name: "tan".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.tan()))))
+            },
+        },
+        false,
+    );
+
+    // asin - جيب معكوس
+    env.define(
+        "asin",
+        Value::NativeFunction {
+            name: "asin".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n < -1.0 || n > 1.0 {
+                    return Err("asin: input must be between -1 and 1".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.asin()))))
+            },
+        },
+        false,
+    );
+
+    // acos - جيب تمام معكوس
+    env.define(
+        "acos",
+        Value::NativeFunction {
+            name: "acos".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n < -1.0 || n > 1.0 {
+                    return Err("acos: input must be between -1 and 1".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.acos()))))
+            },
+        },
+        false,
+    );
+
+    // atan - ظل معكوس
+    env.define(
+        "atan",
+        Value::NativeFunction {
+            name: "atan".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.atan()))))
+            },
+        },
+        false,
+    );
+
+    // atan2 - ظل معكوس مع وسيطين
+    env.define(
+        "atan2",
+        Value::NativeFunction {
+            name: "atan2".to_string(),
+            func: |a| {
+                let y = a[0].borrow().to_number()?;
+                let x = a[1].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(y.atan2(x)))))
+            },
+        },
+        false,
+    );
+
+    // exp - الأس الطبيعي
+    env.define(
+        "exp",
+        Value::NativeFunction {
+            name: "exp".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.exp()))))
+            },
+        },
+        false,
+    );
+
+    // pow - الأس
+    env.define(
+        "pow",
+        Value::NativeFunction {
+            name: "pow".to_string(),
+            func: |a| {
+                let b = a[0].borrow().to_number()?;
+                let e = a[1].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(b.powf(e)))))
+            },
+        },
+        false,
+    );
+
+    // abs - القيمة المطلقة
+    env.define(
+        "abs",
+        Value::NativeFunction {
+            name: "abs".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Number(n.abs())))),
+                _ => Err("abs requires a number".into()),
+            },
+        },
+        false,
+    );
+
+    // ceil - السقف
+    env.define(
+        "ceil",
+        Value::NativeFunction {
+            name: "ceil".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Number(n.ceil())))),
+                _ => Err("ceil requires a number".into()),
+            },
+        },
+        false,
+    );
+
+    // floor - الأرضية
+    env.define(
+        "floor",
+        Value::NativeFunction {
+            name: "floor".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Number(n.floor())))),
+                _ => Err("floor requires a number".into()),
+            },
+        },
+        false,
+    );
+
+    // round - التقريب
+    env.define(
+        "round",
+        Value::NativeFunction {
+            name: "round".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Number(n.round())))),
+                _ => Err("round requires a number".into()),
+            },
+        },
+        false,
+    );
+
+    // min - أصغر قيمة
+    env.define(
+        "min",
+        Value::NativeFunction {
+            name: "min".to_string(),
+            func: |a| {
+                if a.len() >= 2 {
+                    let a_val = a[0].borrow().to_number()?;
+                    let b_val = a[1].borrow().to_number()?;
+                    return Ok(Rc::new(RefCell::new(Value::Number(a_val.min(b_val)))));
+                }
+                match &*a[0].borrow() {
+                    Value::List(l) => {
+                        if l.is_empty() {
+                            return Ok(Rc::new(RefCell::new(Value::Null)));
+                        }
+                        let mut min = f64::INFINITY;
+                        for item in l {
+                            let n = item.borrow().to_number()?;
+                            if n < min {
+                                min = n;
+                            }
+                        }
+                        Ok(Rc::new(RefCell::new(Value::Number(min))))
+                    }
+                    _ => Err("min requires a list or two numbers".into()),
+                }
+            },
+        },
+        false,
+    );
+
+    // max - أكبر قيمة
+    env.define(
+        "max",
+        Value::NativeFunction {
+            name: "max".to_string(),
+            func: |a| {
+                if a.len() >= 2 {
+                    let a_val = a[0].borrow().to_number()?;
+                    let b_val = a[1].borrow().to_number()?;
+                    return Ok(Rc::new(RefCell::new(Value::Number(a_val.max(b_val)))));
+                }
+                match &*a[0].borrow() {
+                    Value::List(l) => {
+                        if l.is_empty() {
+                            return Ok(Rc::new(RefCell::new(Value::Null)));
+                        }
+                        let mut max = f64::NEG_INFINITY;
+                        for item in l {
+                            let n = item.borrow().to_number()?;
+                            if n > max {
+                                max = n;
+                            }
+                        }
+                        Ok(Rc::new(RefCell::new(Value::Number(max))))
+                    }
+                    _ => Err("max requires a list or two numbers".into()),
+                }
+            },
+        },
+        false,
+    );
+
+    // PI - ثابت باي
+    env.define(
+        "PI",
+        Value::Number(std::f64::consts::PI),
+        true,
+    );
+
+    // E - ثابت أويلر
+    env.define(
+        "E",
+        Value::Number(std::f64::consts::E),
+        true,
+    );
+
+    // TAU - ثابت تاو
+    env.define(
+        "TAU",
+        Value::Number(std::f64::consts::TAU),
+        true,
+    );
 }
 
 pub fn define_string_funcs(env: &mut Environment) {

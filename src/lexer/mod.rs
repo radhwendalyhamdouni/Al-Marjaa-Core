@@ -173,21 +173,29 @@ impl Lexer {
             ("تبرير", TokenType::Justify),
             ("حشو", TokenType::Padding),
             ("هامش", TokenType::Margin),
-            // المكونات
+            // المكونات - مع بادئة "م_" لتجنب التعارض مع الدوال
             ("زر", TokenType::Button),
-            ("نص_معروض", TokenType::Text), // إعادة تسمية مكون النص المعروض لتجنب التعارض مع دالة نص()
+            ("م_زر", TokenType::Button), // بادئة م_ للمكون
+            ("مكون_نص", TokenType::Text), // مكون النص المعروض
+            ("م_نص", TokenType::Text), // بديل مختصر
+            ("نص_معروض", TokenType::Text), // للتوافق مع الإصدارات السابقة
             ("عرض_نص", TokenType::Text),   // بديل آخر
-            ("إدخال", TokenType::Input),
+            ("مكون_إدخال", TokenType::Input), // مكون الإدخال
+            ("م_إدخال", TokenType::Input), // بديل مختصر
+            ("إدخال", TokenType::Input), // للتوافق
             ("ادخال", TokenType::Input),
             ("اختيار", TokenType::Select),
+            ("م_اختيار", TokenType::Select),
             ("خانة", TokenType::Checkbox),
             ("راديو", TokenType::Radio),
             ("منزلق", TokenType::Slider),
             ("تقدم", TokenType::Progress),
             ("مؤقت", TokenType::Spinner),
             ("بطاقة", TokenType::Card),
-            ("قائمة", TokenType::List),
+            ("مكون_قائمة", TokenType::List), // مكون القائمة
+            ("م_قائمة", TokenType::List), // بديل مختصر - لتجنب التعارض مع دالة قائمة()
             ("جدول", TokenType::Table),
+            ("م_جدول", TokenType::Table),
             ("استمارة", TokenType::Form),
             ("نموذج_إدخال", TokenType::Form), // إعادة تسمية لتجنب التعارض مع نموذج AI
             ("تسمية", TokenType::Label),
