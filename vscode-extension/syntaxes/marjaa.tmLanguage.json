@@ -1,0 +1,361 @@
+{
+  "name": "Al-Marjaa",
+  "scopeName": "source.marjaa",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#functions"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.marjaa",
+          "match": "#.*$",
+          "captures": {
+            "0": {
+              "name": "punctuation.definition.comment.marjaa"
+            }
+          }
+        },
+        {
+          "name": "comment.line.double-slash.marjaa",
+          "match": "//.*$",
+          "captures": {
+            "0": {
+              "name": "punctuation.definition.comment.marjaa"
+            }
+          }
+        },
+        {
+          "name": "comment.block.marjaa",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "captures": {
+            "0": {
+              "name": "punctuation.definition.comment.marjaa"
+            }
+          }
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.marjaa",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.marjaa",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.marjaa",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.marjaa",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.backtick.marjaa",
+          "begin": "`",
+          "end": "`",
+          "patterns": [
+            {
+              "name": "constant.character.escape.marjaa",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.marjaa",
+          "match": "0[xX][0-9a-fA-F]+"
+        },
+        {
+          "name": "constant.numeric.binary.marjaa",
+          "match": "0[bB][01]+"
+        },
+        {
+          "name": "constant.numeric.float.marjaa",
+          "match": "\\b[0-9]+[.][0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.arabic.marjaa",
+          "match": "[٠-٩]+([.٫][٠-٩]+)?"
+        },
+        {
+          "name": "constant.numeric.decimal.marjaa",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.marjaa",
+          "match": "\\b(إذا|اذا|وإلا|والا|غير_ذلك|وإذا|واذا|طالما|لكل|في|توقف|أكمل|اكمل|كرر|مرة|مرات)\\b"
+        },
+        {
+          "name": "keyword.control.conditional.marjaa",
+          "match": "\\b(طابق|حالة|افتراضي)\\b"
+        },
+        {
+          "name": "keyword.other.declaration.marjaa",
+          "match": "\\b(دالة|متغير|م|ثابت|ث|صنف|تعداد|بيانات|واجهة)\\b"
+        },
+        {
+          "name": "keyword.control.flow.marjaa",
+          "match": "\\b(أرجع|ارجع|ألقِ|الق)\\b"
+        },
+        {
+          "name": "keyword.control.exception.marjaa",
+          "match": "\\b(حاول|امسك|أخيراً|اخيراً|أخيرا|اخيرا)\\b"
+        },
+        {
+          "name": "keyword.control.async.marjaa",
+          "match": "\\b(غير_متزامن|انتظر|أعطِ|اعط)\\b"
+        },
+        {
+          "name": "keyword.other.import.marjaa",
+          "match": "\\b(استورد|صدر|من|استخدم|بوصف|كـ|ك)\\b"
+        },
+        {
+          "name": "keyword.other.module.marjaa",
+          "match": "\\b(وحدة)\\b"
+        },
+        {
+          "name": "keyword.other.new.marjaa",
+          "match": "\\b(جديد|هذا|أصل|اصل)\\b"
+        },
+        {
+          "name": "keyword.other.context.marjaa",
+          "match": "\\b(مع)\\b"
+        },
+        {
+          "name": "constant.language.boolean.marjaa",
+          "match": "\\b(صح|خطأ|خطا)\\b"
+        },
+        {
+          "name": "constant.language.null.marjaa",
+          "match": "\\b(لا_شيء|لاشيء|null|true|false)\\b"
+        },
+        {
+          "name": "support.function.builtin.marjaa",
+          "match": "\\b(اطبع|طبع|أطبع|ادخل|دخل|نوع|طول|احذف|تأكد|تاكد|نوع_من|نوع_مثل)\\b"
+        },
+        {
+          "name": "keyword.other.range.marjaa",
+          "match": "\\b(مدى|خطوة)\\b"
+        },
+        {
+          "name": "keyword.other.lambda.marjaa",
+          "match": "\\b(لامدا|دالة_صغيرة|fn)\\b"
+        }
+      ]
+    },
+    "ai-keywords": {
+      "patterns": [
+        {
+          "name": "keyword.ai.marjaa",
+          "match": "\\b(أونكس|onnx|نموذج|حمّل|حمل|احفظ|حفظ|استدل|استدلال|موتر|شكل|مخرج|طبقة|كثيف|خطي|التفاف|conv|تجميع|pool|طبع|تسوية_قيم|إسقاط|اسقاط|تسوية|flatten|إعادة_تشكيل|reshape|تنشيط|سوفت_ماكس|softmax|ريلو|relu|سيجمويد|sigmoid|دفعة|batch|درّب|درب|تدريب|توقع|تنبؤ|محسّن|محقق|خسارة)\\b"
+        }
+      ]
+    },
+    "ui-keywords": {
+      "patterns": [
+        {
+          "name": "keyword.ui.layout.marjaa",
+          "match": "\\b(صف|صف_أفقي|عمود|صف_عمودي|شبكة_تخطيط|شبكة_عرض|مرن|كومة|التفاف_نص|لف|فجوة|محاذاة|تبرير|حشو|هامش)\\b"
+        },
+        {
+          "name": "keyword.ui.component.marjaa",
+          "match": "\\b(زر|م_زر|مكون_نص|م_نص|نص_معروض|عرض_نص|مكون_إدخال|م_إدخال|إدخال|ادخال|اختيار|م_اختيار|خانة|راديو|منزلق|تقدم|مؤقت|بطاقة|مكون_قائمة|م_قائمة|جدول|م_جدول|استمارة|نموذج_إدخال|تسمية|صورة|أيقونة|ايقونة|شارة|صورة_شخصية|تلميح|نافذة|نافذة_منبثقة|تنبيه|منبثق)\\b"
+        },
+        {
+          "name": "keyword.ui.theme.marjaa",
+          "match": "\\b(لون|خط|حجم|عرض|ارتفاع|حدود|ظل|خلفية|ثيم|موجه|موجّه|مسار|حدث)\\b"
+        },
+        {
+          "name": "keyword.ui.chart.marjaa",
+          "match": "\\b(رسم|رسم_بياني|رسم_خطي|رسم_أعمدة|رسم_دائري|رسم_مساحي)\\b"
+        },
+        {
+          "name": "keyword.ui.animation.marjaa",
+          "match": "\\b(حرك|حركة|انتقال|مدة|تأخير|تخفيف)\\b"
+        },
+        {
+          "name": "keyword.ui.event.marjaa",
+          "match": "\\b(نقر|تغيير|إرسال|ارسال|تركيز|ضبابية|تحويم|تمرير)\\b"
+        },
+        {
+          "name": "keyword.ui.binding.marjaa",
+          "match": "\\b(ربط|راقب|محسوب|راقب_التغييرات)\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "entity.name.function.marjaa",
+          "match": "\\b([a-zA-Z_\\u0600-\\u06FF][a-zA-Z0-9_\\u0600-\\u06FF]*)\\s*(?=\\()"
+        },
+        {
+          "name": "meta.function-call.marjaa",
+          "match": "\\b([a-zA-Z_\\u0600-\\u06FF][a-zA-Z0-9_\\u0600-\\u06FF]*)\\s*\\(",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.marjaa"
+            }
+          }
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arithmetic.marjaa",
+          "match": "[+\\-*/%^]|//"
+        },
+        {
+          "name": "keyword.operator.comparison.marjaa",
+          "match": "==|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.assignment.marjaa",
+          "match": "=|\\+=|-=|\\*=|/=|%=|\\^="
+        },
+        {
+          "name": "keyword.operator.logical.marjaa",
+          "match": "\\b(و|أو|او|ليس)\\b|&&|\\|\\||&&=|\\|\\|="
+        },
+        {
+          "name": "keyword.operator.bitwise.marjaa",
+          "match": "&|\\||~~|~|<<|>>"
+        },
+        {
+          "name": "keyword.operator.increment.marjaa",
+          "match": "\\+\\+|--"
+        },
+        {
+          "name": "keyword.operator.pipe.marjaa",
+          "match": "\\|>"
+        },
+        {
+          "name": "keyword.operator.null-coalescing.marjaa",
+          "match": "\\?\\?"
+        },
+        {
+          "name": "keyword.operator.optional.marjaa",
+          "match": "\\?\\."
+        },
+        {
+          "name": "keyword.operator.ternary.marjaa",
+          "match": "\\?|؟"
+        },
+        {
+          "name": "keyword.operator.arrow.marjaa",
+          "match": "->|=>"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.marjaa",
+          "match": "\\b[a-zA-Z_\\u0600-\\u06FF][a-zA-Z0-9_\\u0600-\\u06FF]*\\b"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "support.type.primitive.marjaa",
+          "match": "\\b(رقم|نص|منطقي|قائمة|قاموس|مجموعة)\\b"
+        },
+        {
+          "name": "support.type.builtin.marjaa",
+          "match": "\\b(Array|List|Dict|Map|Set|String|Number|Boolean|Function|Object|None)\\b"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.terminator.statement.marjaa",
+          "match": "[؛;]"
+        },
+        {
+          "name": "punctuation.separator.comma.marjaa",
+          "match": "[،,]"
+        },
+        {
+          "name": "punctuation.accessor.dot.marjaa",
+          "match": "\\."
+        },
+        {
+          "name": "punctuation.separator.colon.marjaa",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.bracket.round.marjaa",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.bracket.curly.marjaa",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.bracket.square.marjaa",
+          "match": "[\\[\\]]"
+        },
+        {
+          "name": "punctuation.decorator.marjaa",
+          "match": "@"
+        },
+        {
+          "name": "punctuation.range.marjaa",
+          "match": "\\.\\."
+        },
+        {
+          "name": "punctuation.spread.marjaa",
+          "match": "\\.\\.\\."
+        }
+      ]
+    }
+  }
+}

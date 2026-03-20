@@ -1,0 +1,149 @@
+{
+  "comments": {
+    "lineComment": "#",
+    "blockComment": ["/*", "*/"]
+  },
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+  "autoClosingPairs": [
+    {
+      "open": "{",
+      "close": "}"
+    },
+    {
+      "open": "[",
+      "close": "]"
+    },
+    {
+      "open": "(",
+      "close": ")"
+    },
+    {
+      "open": "\"",
+      "close": "\""
+    },
+    {
+      "open": "'",
+      "close": "'"
+    },
+    {
+      "open": "`",
+      "close": "`"
+    },
+    {
+      "open": "«",
+      "close": "»"
+    }
+  ],
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["\"", "\""],
+    ["'", "'"],
+    ["`", "`"],
+    ["«", "»"]
+  ],
+  "colorizedBracketPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+  "autoCloseBefore": ";:،,=}])\"'`» \n\t",
+  "wordPattern": "[a-zA-Z_\\u0600-\\u06FF][a-zA-Z0-9_\\u0600-\\u06FF']*",
+  "indentationRules": {
+    "increaseIndentPattern": "(\\{|\\(|\\[|دالة\\s+[a-zA-Z_\\u0600-\\u06FF][a-zA-Z0-9_\\u0600-\\u06FF]*\\s*\\(|إذا\\s*\\(|طالما\\s*\\(|لكل\\s*\\(|حاول\\s*\\{|طابق\\s*\\{|صنف\\s+[a-zA-Z_\\u0600-\\u06FF])",
+    "decreaseIndentPattern": "^(\\s*\\}|\\s*\\)|\\s*\\]|\\s*وإلا|\\s*والا|\\s*وإذا|\\s*واذا|\\s*حالة|\\s*امسك\\s*\\(|\\s*أخيرا)"
+  },
+  "onEnterRules": [
+    {
+      "beforeText": "\\s*#.*$",
+      "action": {
+        "indent": "none",
+        "appendText": "# "
+      }
+    },
+    {
+      "beforeText": "^\\s*دالة\\s+[a-zA-Z_\\u0600-\\u06FF][a-zA-Z0-9_\\u0600-\\u06FF]*\\s*\\([^)]*\\)\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*إذا\\s*\\([^)]*\\)\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*طالما\\s*\\([^)]*\\)\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*لكل\\s*\\([^)]*\\)\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*حاول\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*امسك\\s*\\([^)]*\\)\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*أخيراً?\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*طابق\\s*\\([^)]*\\)\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*حالة\\s+[^:]+:\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    },
+    {
+      "beforeText": "^\\s*صنف\\s+[a-zA-Z_\\u0600-\\u06FF][a-zA-Z0-9_\\u0600-\\u06FF]*\\s*\\{\\s*$",
+      "action": {
+        "indent": "indent"
+      }
+    }
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*#\\s*region\\b",
+      "end": "^\\s*#\\s*endregion\\b"
+    }
+  },
+  "electricCharacters": [
+    "{",
+    "}",
+    "(",
+    ")",
+    "[",
+    "]",
+    "\"",
+    "'",
+    "؛",
+    "،"
+  ],
+  "strictrackets": true
+}

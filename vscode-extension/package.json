@@ -1,0 +1,365 @@
+{
+  "name": "al-marjaa-language",
+  "displayName": "Al-Marjaa Language Support",
+  "description": "دعم لغة المرجع البرمجية العربية في VS Code - Arabic Programming Language Support",
+  "version": "1.0.0",
+  "publisher": "al-marjaa",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Debuggers",
+    "Language Packs"
+  ],
+  "activationEvents": [
+    "onLanguage:marjaa",
+    "onCommand:marjaa.run",
+    "onCommand:marjaa.debug",
+    "onCommand:marjaa.startServer"
+  ],
+  "main": "./out/extension.js",
+  "icon": "images/icon.png",
+  "contributes": {
+    "languages": [
+      {
+        "id": "marjaa",
+        "aliases": [
+          "Al-Marjaa",
+          "المرجع",
+          "marjaa"
+        ],
+        "extensions": [
+          ".mrj",
+          ".مرجع"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icon-light.png",
+          "dark": "./images/icon-dark.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "marjaa",
+        "scopeName": "source.marjaa",
+        "path": "./syntaxes/marjaa.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "marjaa.run",
+        "title": "تشغيل برنامج المرجع",
+        "category": "المرجع",
+        "icon": "$(play)"
+      },
+      {
+        "command": "marjaa.debug",
+        "title": "تصحيح برنامج المرجع",
+        "category": "المرجع",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "marjaa.startServer",
+        "title": "بدء خادم اللغة",
+        "category": "المرجع"
+      },
+      {
+        "command": "marjaa.stopServer",
+        "title": "إيقاف خادم اللغة",
+        "category": "المرجع"
+      },
+      {
+        "command": "marjaa.restartServer",
+        "title": "إعادة تشغيل خادم اللغة",
+        "category": "المرجع"
+      },
+      {
+        "command": "marjaa.compile",
+        "title": "تجميع البرنامج",
+        "category": "المرجع"
+      },
+      {
+        "command": "marjaa.format",
+        "title": "تنسيق الملف",
+        "category": "المرجع"
+      },
+      {
+        "command": "marjaa.showOutput",
+        "title": "إظهار المخرجات",
+        "category": "المرجع"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorLangId == marjaa",
+          "command": "marjaa.run",
+          "group": "marjaa@1"
+        },
+        {
+          "when": "editorLangId == marjaa",
+          "command": "marjaa.debug",
+          "group": "marjaa@2"
+        },
+        {
+          "when": "editorLangId == marjaa",
+          "command": "marjaa.format",
+          "group": "marjaa@3"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "editorLangId == marjaa",
+          "command": "marjaa.run",
+          "group": "navigation@1"
+        },
+        {
+          "when": "editorLangId == marjaa",
+          "command": "marjaa.debug",
+          "group": "navigation@2"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "marjaa.run",
+        "key": "f5",
+        "when": "editorLangId == marjaa"
+      },
+      {
+        "command": "marjaa.debug",
+        "key": "ctrl+f5",
+        "when": "editorLangId == marjaa"
+      },
+      {
+        "command": "marjaa.format",
+        "key": "shift+alt+f",
+        "when": "editorLangId == marjaa"
+      }
+    ],
+    "configuration": {
+      "title": "المرجع - Al-Marjaa",
+      "properties": {
+        "marjaa.executablePath": {
+          "type": "string",
+          "default": "almarjaa",
+          "description": "مسار ملف التنفيذ الخاص بمفسر المرجع"
+        },
+        "marjaa.enableLanguageServer": {
+          "type": "boolean",
+          "default": true,
+          "description": "تفعيل خادم اللغة للحصول على الإكمال التلقائي والأخطاء الفورية"
+        },
+        "marjaa.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "مسار خادم اللغة (اختياري)"
+        },
+        "marjaa.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "مستوى التتبع لخادم اللغة"
+        },
+        "marjaa.format.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "تفعيل التنسيق التلقائي"
+        },
+        "marjaa.format.indentSize": {
+          "type": "number",
+          "default": 4,
+          "description": "حجم المسافة البادئة"
+        },
+        "marjaa.diagnostics.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "تفعيل التشخيص التلقائي للأخطاء"
+        },
+        "marjaa.completion.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "تفعيل الإكمال التلقائي"
+        },
+        "marjaa.hover.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "تفعيل عرض التوثيق عند التحويم"
+        },
+        "marjaa.signatureHelp.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "تفعيل مساعدة معلمات الدوال"
+        }
+      }
+    },
+    "breakpoints": [
+      {
+        "language": "marjaa"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "marjaa",
+        "label": "Al-Marjaa Debugger",
+        "program": "./out/debugAdapter.js",
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "مسار البرنامج المراد تصحيحه",
+                "default": "${file}"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "description": "التوقف عند بداية البرنامج",
+                "default": true
+              },
+              "trace": {
+                "type": "boolean",
+                "description": "تفعيل التتبع التفصيلي",
+                "default": false
+              },
+              "args": {
+                "type": "array",
+                "description": "معاملات سطر الأوامر",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              }
+            }
+          },
+          "attach": {
+            "required": [
+              "processId"
+            ],
+            "properties": {
+              "processId": {
+                "type": "number",
+                "description": "معرف العملية للاتصال بها"
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "marjaa",
+            "request": "launch",
+            "name": "تشغيل البرنامج الحالي",
+            "program": "${file}",
+            "stopOnEntry": true
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Marjaa: Launch Program",
+            "description": "تشغيل برنامج المرجع مع المصحح",
+            "body": {
+              "type": "marjaa",
+              "request": "launch",
+              "name": "تشغيل البرنامج",
+              "program": "^\"\\${file}\"",
+              "stopOnEntry": true
+            }
+          }
+        ]
+      }
+    ],
+    "snippets": [
+      {
+        "language": "marjaa",
+        "path": "./snippets/snippets.json"
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "marjaa",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "الأمر المراد تنفيذه"
+          },
+          "args": {
+            "type": "array",
+            "description": "معاملات الأمر",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "marjaa",
+        "owner": "marjaa",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": {
+          "regexp": "^(خطأ في السطر (\\d+)):(.*)$",
+          "line": 2,
+          "message": 3
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
+    "@vscode/test-electron": "^2.2.0",
+    "@vscode/vsce": "^2.19.0",
+    "eslint": "^8.28.0",
+    "glob": "^10.0.0",
+    "mocha": "^10.0.0",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "vscode-debugadapter": "^1.51.0",
+    "vscode-debugprotocol": "^1.51.0",
+    "vscode-languageclient": "^8.0.0",
+    "vscode-languageserver": "^8.0.0",
+    "vscode-languageserver-textdocument": "^1.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/radhwendalyhamdouni/Al-Marjaa-Core"
+  },
+  "license": "MIT",
+  "keywords": [
+    "arabic",
+    "programming",
+    "language",
+    "المرجع",
+    "برمجة",
+    "عربية"
+  ]
+}
