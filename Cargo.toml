@@ -99,7 +99,58 @@ network = ["reqwest", "tokio"]
 [dev-dependencies]
 pretty_assertions = "1.4"
 criterion = "0.5"
+serial_test = "3.0"
+tempfile = "3.10"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# إعدادات الاختبارات
+# ═══════════════════════════════════════════════════════════════════════════════
+[[test]]
+name = "lexer_tests"
+path = "tests/lexer_tests.rs"
+
+[[test]]
+name = "parser_tests"
+path = "tests/parser_tests.rs"
+
+[[test]]
+name = "interpreter_tests"
+path = "tests/interpreter_tests.rs"
+
+[[test]]
+name = "bytecode_tests"
+path = "tests/bytecode_tests.rs"
+
+[[test]]
+name = "jit_tests"
+path = "tests/jit_tests.rs"
+
+[[test]]
+name = "integration_tests"
+path = "tests/integration_tests.rs"
+
+[[test]]
+name = "stdlib_tests"
+path = "tests/stdlib_tests.rs"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# المعايير (Benchmarks)
+# ═══════════════════════════════════════════════════════════════════════════════
+[[bench]]
+name = "lexer_benchmark"
+harness = false
+
+[[bench]]
+name = "parser_benchmark"
+harness = false
+
+[[bench]]
+name = "interpreter_benchmark"
+harness = false
 
 [profile.release]
 opt-level = 3
 lto = true
+
+[profile.test]
+opt-level = 1
