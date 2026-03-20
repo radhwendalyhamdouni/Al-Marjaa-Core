@@ -326,6 +326,30 @@ pub enum Stmt {
         items: Vec<String>,
     },
 
+    /// تصدير قيمة أو دالة
+    Export {
+        /// اسم العنصر المُصدّر
+        name: String,
+        /// القيمة المُصدّرة (اختياري إذا كانت إعادة تصدير)
+        value: Option<Expr>,
+        /// هل هو التصدير الافتراضي
+        is_default: bool,
+    },
+
+    /// تصدير عناصر متعددة
+    ExportList {
+        /// أسماء العناصر المُصدّرة
+        items: Vec<String>,
+    },
+
+    /// إعادة تصدير من وحدة أخرى
+    Reexport {
+        /// العناصر المُعاد تصديرها (فارغ يعني الكل)
+        items: Vec<String>,
+        /// الوحدة المصدر
+        module: String,
+    },
+
     Assert {
         condition: Expr,
         message: Option<Expr>,

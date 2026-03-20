@@ -13,7 +13,7 @@ pub mod package_manager;
 // إعادة تصدير الأنواع الرئيسية
 pub use module_system::{
     ExportKind, ExportStatement, ImportKind, ImportStatement, Module, ModuleError, ModuleId,
-    ModuleManager, ModuleManagerStats, ModuleStats, SourceLocation, TypeDefinition,
+    ModuleManager, ModuleManagerStats, ModuleScope, ModuleStats, SourceLocation, TypeDefinition,
 };
 
 pub use package_manager::{

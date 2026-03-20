@@ -339,12 +339,56 @@ pub struct ModuleManager {
     stats: ModuleManagerStats,
 }
 
+/// نطاق الوحدة - يعزل المتغيرات المحلية
+#[derive(Debug, Default)]
+pub struct ModuleScope {
+    /// المتغيرات المحلية في الوحدة
+    pub variables: HashMap<String, Value>,
+    /// الثوابت
+    pub constants: HashMap<String, Value>,
+    /// الدوال المحلية
+    pub functions: HashMap<String, usize>, // chunk offset
+}
+
+impl ModuleScope {
+    /// إنشاء نطاق جديد
+    pub fn new() -> Self {
+        ModuleScope {
+            variables: HashMap::new(),
+            constants: HashMap::new(),
+            functions: HashMap::new(),
+        }
+    }
+    
+    /// تعيين متغير
+    pub fn set_var(&mut self, name: &str, value: Value) {
+        self.variables.insert(name.to_string(), value);
+    }
+    
+    /// الحصول على متغير
+    pub fn get_var(&self, name: &str) -> Option<&Value> {
+        self.variables.get(name)
+    }
+    
+    /// تعيين ثابت
+    pub fn set_const(&mut self, name: &str, value: Value) {
+        self.constants.insert(name.to_string(), value);
+    }
+    
+    /// الحصول على ثابت
+    pub fn get_const(&self, name: &str) -> Option<&Value> {
+        self.constants.get(name)
+    }
+}
+
 /// كاش الوحدات
 #[derive(Debug, Default)]
 struct ModuleCache {
     path_to_id: HashMap<PathBuf, String>,
     compiled: HashMap<String, Chunk>,
-}
+    /// نطاقات الوحدات المحملة
+    scopes: HashMap<String, ModuleScope>,
+} 
 
 /// إحصائيات مدير الوحدات
 #[derive(Debug, Default, Clone)]
@@ -468,15 +512,145 @@ impl ModuleManager {
     }
     
     /// استخراج الواردات من البرنامج
-    fn extract_imports(&mut self, _program: &crate::parser::ast::Program) -> Result<Vec<ImportStatement>, ModuleError> {
-        // TODO: تحليل AST لاستخراج بيانات الاستيراد
-        Ok(Vec::new())
+    fn extract_imports(&mut self, program: &crate::parser::ast::Program) -> Result<Vec<ImportStatement>, ModuleError> {
+        let mut imports = Vec::new();
+        
+        for stmt in &program.statements {
+            if let crate::parser::ast::Stmt::Import { path, alias, items } = stmt {
+                let module_id = ModuleId::from_path(&PathBuf::from(path));
+                
+                let kind = if items.is_empty() {
+                    // استورد "وحدة"؛ أو استورد "وحدة" كـ اسم؛
+                    ImportKind::Module {
+                        local_name: alias.clone().unwrap_or_else(|| path.clone()),
+                        module: module_id,
+                    }
+                } else {
+                    // استورد { أ، ب } من "وحدة"؛
+                    let named_items: Vec<(String, String)> = items
+                        .iter()
+                        .map(|item| (item.clone(), item.clone()))
+                        .collect();
+                    
+                    ImportKind::Named {
+                        items: named_items,
+                        module: module_id,
+                    }
+                };
+                
+                imports.push(ImportStatement {
+                    kind,
+                    location: SourceLocation::default(),
+                });
+            }
+        }
+        
+        Ok(imports)
     }
     
     /// استخراج الصادرات من البرنامج
-    fn extract_exports(&self, _program: &crate::parser::ast::Program) -> HashMap<String, ExportKind> {
-        // TODO: تحليل AST لاستخراج بيانات التصدير
-        HashMap::new()
+    fn extract_exports(&self, program: &crate::parser::ast::Program) -> HashMap<String, ExportKind> {
+        let mut exports = HashMap::new();
+        let mut default_export: Option<String> = None;
+        
+        for stmt in &program.statements {
+            match stmt {
+                crate::parser::ast::Stmt::Export { name, value, is_default } => {
+                    if *is_default {
+                        default_export = Some(name.clone());
+                    }
+                    
+                    // استخراج القيمة إن وجدت
+                    let export_kind = if let Some(expr) = value {
+                        match expr {
+                            crate::parser::ast::Expr::Number(n) => ExportKind::Constant {
+                                name: name.clone(),
+                                value: Value::Number(*n),
+                            },
+                            crate::parser::ast::Expr::String(s) => ExportKind::Constant {
+                                name: name.clone(),
+                                value: Value::String(s.clone()),
+                            },
+                            crate::parser::ast::Expr::Boolean(b) => ExportKind::Constant {
+                                name: name.clone(),
+                                value: Value::Boolean(*b),
+                            },
+                            crate::parser::ast::Expr::Null => ExportKind::Constant {
+                                name: name.clone(),
+                                value: Value::Null,
+                            },
+                            _ => ExportKind::Value {
+                                name: name.clone(),
+                                value: Value::Null, // سيتم تقييمها لاحقاً
+                            },
+                        }
+                    } else {
+                        // تصدير مرجعي - سيتم ربطه لاحقاً
+                        ExportKind::Value {
+                            name: name.clone(),
+                            value: Value::Null,
+                        }
+                    };
+                    
+                    exports.insert(name.clone(), export_kind);
+                }
+                
+                crate::parser::ast::Stmt::ExportList { items } => {
+                    for item in items {
+                        exports.insert(item.clone(), ExportKind::Value {
+                            name: item.clone(),
+                            value: Value::Null,
+                        });
+                    }
+                }
+                
+                crate::parser::ast::Stmt::FunctionDecl { name, .. } => {
+                    // الدوال تُصدّر تلقائياً إذا كانت في مستوى أعلى
+                    exports.insert(name.clone(), ExportKind::Function {
+                        name: name.clone(),
+                        chunk: Chunk::new(),
+                        params: Vec::new(),
+                    });
+                }
+                
+                crate::parser::ast::Stmt::VariableDecl { name, is_const, .. } => {
+                    // المتغيرات تُصدّر تلقائياً
+                    let kind = if *is_const {
+                        ExportKind::Constant {
+                            name: name.clone(),
+                            value: Value::Null,
+                        }
+                    } else {
+                        ExportKind::Value {
+                            name: name.clone(),
+                            value: Value::Null,
+                        }
+                    };
+                    exports.insert(name.clone(), kind);
+                }
+                
+                crate::parser::ast::Stmt::ClassDecl { name, .. } => {
+                    exports.insert(name.clone(), ExportKind::Type {
+                        name: name.clone(),
+                        type_def: TypeDefinition {
+                            name: name.clone(),
+                            fields: Vec::new(),
+                        },
+                    });
+                }
+                
+                _ => {}
+            }
+        }
+        
+        // تسجيل التصدير الافتراضي
+        if let Some(default_name) = default_export {
+            if exports.contains_key(&default_name) {
+                // التصدير الافتراضي موجود
+            }
+        }
+        
+        exports
     }
     
     /// الحصول على وحدة
@@ -493,6 +667,27 @@ impl ModuleManager {
     pub fn clear_cache(&mut self) {
         self.cache.path_to_id.clear();
         self.cache.compiled.clear();
+        self.cache.scopes.clear();
+    }
+    
+    /// الحصول على نطاق وحدة
+    pub fn get_module_scope(&self, name: &str) -> Option<&ModuleScope> {
+        self.cache.scopes.get(name)
+    }
+    
+    /// الحصول على نطاق وحدة للتعديل
+    pub fn get_module_scope_mut(&mut self, name: &str) -> Option<&mut ModuleScope> {
+        self.cache.scopes.get_mut(name)
+    }
+    
+    /// إنشاء نطاق جديد لوحدة
+    pub fn create_module_scope(&mut self, name: &str) {
+        self.cache.scopes.insert(name.to_string(), ModuleScope::new());
+    }
+    
+    /// التحقق من وجود نطاق لوحدة
+    pub fn has_scope(&self, name: &str) -> bool {
+        self.cache.scopes.contains_key(name)
     }
     
     /// قائمة الوحدات المحمّلة

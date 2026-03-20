@@ -437,6 +437,19 @@ impl LintVisitor {
             Stmt::Yield(expr) => {
                 self.visit_expr(expr);
             }
+            // معالجة بيانات التصدير
+            Stmt::Export { name, value, is_default: _ } => {
+                if let Some(val_expr) = value {
+                    self.visit_expr(val_expr);
+                }
+                let _ = name;
+            }
+            Stmt::ExportList { items } => {
+                let _ = items;
+            }
+            Stmt::Reexport { items, module } => {
+                let _ = (items, module);
+            }
         }
     }
 

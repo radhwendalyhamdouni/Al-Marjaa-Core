@@ -597,6 +597,35 @@ impl Interpreter {
                 Ok(Rc::new(RefCell::new(Value::Null)))
             }
 
+            // معالجة بيانات التصدير
+            Stmt::Export { name, value, is_default: _ } => {
+                // تقييم القيمة إن وجدت وتسجيلها
+                if let Some(val_expr) = value {
+                    let val = self.evaluate_expression(val_expr)?;
+                    let inner_val = val.borrow().clone();
+                    self.environment.borrow_mut().define(name, inner_val, false);
+                }
+                // تسجيل كتصدير (يمكن توسيعه لاحقاً)
+                Ok(Rc::new(RefCell::new(Value::Null)))
+            }
+            
+            Stmt::ExportList { items } => {
+                // تسجيل العناصر كصادرات
+                for item in items {
+                    if let Some(val) = self.environment.borrow().get(item) {
+                        // العنصر موجود بالفعل
+                        let _ = val;
+                    }
+                }
+                Ok(Rc::new(RefCell::new(Value::Null)))
+            }
+            
+            Stmt::Reexport { items, module } => {
+                // إعادة تصدير من وحدة أخرى - يتطلب نظام وحدات كامل
+                let _ = (items, module);
+                Ok(Rc::new(RefCell::new(Value::Null)))
+            }
+
             Stmt::UiComponentDecl { .. }
             | Stmt::StateDecl { .. }
             | Stmt::ThemeDecl { .. }

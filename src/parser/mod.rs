@@ -181,6 +181,7 @@ impl Parser {
                 | TokenType::Match
                 | TokenType::Class
                 | TokenType::Import
+                | TokenType::Export
                 | TokenType::Assert
                 | TokenType::Delete
                 | TokenType::Interface
@@ -262,6 +263,7 @@ impl Parser {
             TokenType::Match => self.parse_match_statement(),
             TokenType::Class => self.parse_class_decl(),
             TokenType::Import => self.parse_import(),
+            TokenType::Export => self.parse_export(),
             TokenType::Assert => self.parse_assert(),
             TokenType::Delete => {
                 self.advance();
@@ -1106,6 +1108,117 @@ impl Parser {
 
         self.advance();
         Ok(name)
+    }
+
+    /// تحليل جملة التصدير: صدر اسم؛ أو صدر { أ، ب، ج }؛ أو صدر افتراضي اسم = قيمة؛
+    fn parse_export(&mut self) -> Result<Stmt, ParseError> {
+        self.advance();
+
+        // صدر افتراضي - تصدير افتراضي
+        if self.match_token(&[TokenType::Default]) {
+            self.advance();
+            let name = self.parse_identifier()?;
+            
+            // صدر افتراضي اسم = قيمة؛ أو صدر افتراضي اسم؛
+            let value = if self.match_token(&[TokenType::Assign]) {
+                self.advance();
+                Some(self.parse_expression()?)
+            } else {
+                None
+            };
+            
+            self.consume_semicolon()?;
+            return Ok(Stmt::Export {
+                name,
+                value,
+                is_default: true,
+            });
+        }
+
+        // صدر { أ، ب، ج } - تصدير متعدد
+        if self.match_token(&[TokenType::LBrace]) {
+            self.advance();
+            let mut items = Vec::new();
+            
+            while !self.match_token(&[TokenType::RBrace, TokenType::EOF]) {
+                items.push(self.parse_import_item_name()?);
+                if self.match_token(&[TokenType::Comma]) {
+                    self.advance();
+                } else {
+                    break;
+                }
+            }
+            self.expect(TokenType::RBrace)?;
+            
+            // تحقق من إعادة التصدير: صدر { أ، ب } من "وحدة"؛
+            if self.match_token(&[TokenType::From]) {
+                self.advance();
+                let module = match &self.current_token().token_type {
+                    TokenType::String(s) => s.clone(),
+                    TokenType::Identifier(n) => n.clone(),
+                    _ => {
+                        let token = self.current_token();
+                        return Err(ParseError {
+                            message: "توقع اسم الوحدة بعد 'من'".to_string(),
+                            line: token.line,
+                            column: token.column,
+                        });
+                    }
+                };
+                self.advance();
+                self.consume_semicolon()?;
+                return Ok(Stmt::Reexport { items, module });
+            }
+            
+            self.consume_semicolon()?;
+            return Ok(Stmt::ExportList { items });
+        }
+
+        // صدر * من "وحدة"؛ - إعادة تصدير الكل
+        if self.match_token(&[TokenType::Multiply]) {
+            self.advance();
+            if self.match_token(&[TokenType::From]) {
+                self.advance();
+                let module = match &self.current_token().token_type {
+                    TokenType::String(s) => s.clone(),
+                    TokenType::Identifier(n) => n.clone(),
+                    _ => {
+                        let token = self.current_token();
+                        return Err(ParseError {
+                            message: "توقع اسم الوحدة بعد 'من'".to_string(),
+                            line: token.line,
+                            column: token.column,
+                        });
+                    }
+                };
+                self.advance();
+                self.consume_semicolon()?;
+                return Ok(Stmt::Reexport { items: Vec::new(), module });
+            }
+            let token = self.current_token();
+            return Err(ParseError {
+                message: "توقع 'من' بعد '*'".to_string(),
+                line: token.line,
+                column: token.column,
+            });
+        }
+
+        // صدر اسم؛ أو صدر اسم = قيمة؛ - تصدير بسيط
+        let name = self.parse_identifier()?;
+        
+        let value = if self.match_token(&[TokenType::Assign]) {
+            self.advance();
+            Some(self.parse_expression()?)
+        } else {
+            None
+        };
+        
+        self.consume_semicolon()?;
+        Ok(Stmt::Export {
+            name,
+            value,
+            is_default: false,
+        })
     }
 
     fn parse_assert(&mut self) -> Result<Stmt, ParseError> {
