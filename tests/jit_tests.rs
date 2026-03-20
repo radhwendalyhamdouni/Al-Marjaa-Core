@@ -2,7 +2,7 @@
 // اختبارات مترجم JIT - JIT Compiler Tests
 // ═══════════════════════════════════════════════════════════════════════════════
 
-use almarjaa::bytecode::{Compiler, JitCompiler, CompleteV2JitCompiler};
+use almarjaa::bytecode::{Compiler, CompleteV2JitCompiler};
 use std::rc::Rc;
 use std::cell::RefCell;
 use almarjaa::interpreter::value::Environment;

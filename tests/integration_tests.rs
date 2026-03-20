@@ -5,7 +5,7 @@
 use almarjaa::interpreter::Interpreter;
 use almarjaa::parser::Parser;
 use almarjaa::lexer::Lexer;
-use almarjaa::bytecode::{Compiler, VM, CompleteV2JitCompiler};
+use almarjaa::bytecode::{Compiler, VM, CompleteV2JitCompiler, ExecutionResult};
 use std::rc::Rc;
 use std::cell::RefCell;
 use almarjaa::interpreter::value::Environment;
@@ -115,7 +115,7 @@ fn test_full_data_processing() {
         متغير أعلى_قيمة = 0
         
         لكل بيع في مبيعات:
-            متvariable قيمة = بيع["سعر"] * بيع["كمية"]
+            متغير قيمة = بيع["سعر"] * بيع["كمية"]
             إذا قيمة > أعلى_قيمة:
                 أعلى_قيمة = قيمة
                 أعلى_منتج = بيع["منتج"]
@@ -140,8 +140,8 @@ fn test_full_algorithms() {
             
             متغير محور = قائمة[0]
             متغير أقل = []
-            متvariable أكبر = []
-            متvariable متساوي = [محور]
+            متغير أكبر = []
+            متغير متساوي = [محور]
             
             لـ س من 1 إلى طول(قائمة):
                 إذا قائمة[س] < محور:
@@ -196,18 +196,19 @@ fn test_integration_lexer_parser_interpreter() {
 fn test_integration_compiler_vm() {
     let source = r#"
         متغير س = 10
-        متvariable ص = 20
+        متغير ص = 20
         س + ص
     "#;
     
     // 1. Compiler
     let chunk = Compiler::compile_source(source).expect("فشل Compiler");
-    assert!(!chunk.code().is_empty(), "Compiler يجب أن ينتج تعليمات");
+    assert!(!chunk.is_empty(), "Compiler يجب أن ينتج تعليمات");
     
     // 2. VM
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
-    assert!(result.is_ok(), "VM يجب أن تنفذ");
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
+    assert!(matches!(result, ExecutionResult::Ok(_)), "VM يجب أن تنفذ");
     
     println!("✅ test_integration_compiler_vm");
 }
@@ -238,8 +239,8 @@ fn test_integration_compiler_jit() {
 #[test]
 fn test_compatibility_interpreter_vm_jit() {
     let source = r#"
-        متvariable س = 10
-        متvariable ص = 20
+        متغير س = 10
+        متغير ص = 20
         س * ص + س - ص
     "#;
     
@@ -247,15 +248,17 @@ fn test_compatibility_interpreter_vm_jit() {
     let mut interp = Interpreter::new();
     let interp_result = interp.run(source).is_ok();
     
-    // VM
-    let chunk = Compiler::compile_source(source).expect("فشل Compiler");
-    let mut vm = VM::new();
-    let vm_result = vm.run(&chunk).is_ok();
+    // VM - ترجمة منفصلة
+    let chunk_for_vm = Compiler::compile_source(source).expect("فشل Compiler");
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk_for_vm);
+    let vm_result = matches!(vm.run(), ExecutionResult::Ok(_));
     
-    // JIT
+    // JIT - ترجمة منفصلة
+    let chunk_for_jit = Compiler::compile_source(source).expect("فشل Compiler");
     let mut jit = CompleteV2JitCompiler::new();
     let mut globals = Rc::new(RefCell::new(Environment::new()));
-    let jit_result = jit.execute(&chunk, &mut globals).is_ok();
+    let jit_result = jit.execute(&chunk_for_jit, &mut globals).is_ok();
     
     assert!(interp_result && vm_result && jit_result, 
             "جميع المحركات يجب أن تعطي نفس النتيجة");
@@ -271,7 +274,7 @@ fn test_compatibility_interpreter_vm_jit() {
 fn test_full_performance_benchmark() {
     let source = r#"
         // حساب مجموع 1 إلى 100000
-        متvariable مجموع = 0
+        متغير مجموع = 0
         لـ س من 1 إلى 100000:
             مجموع = مجموع + س
     "#;
@@ -286,22 +289,24 @@ fn test_full_performance_benchmark() {
     println!("   Interpreter: {:?}", interp_time);
     
     // VM
-    let chunk = Compiler::compile_source(source).expect("فشل Compiler");
-    let mut vm = VM::new();
+    let chunk_for_vm = Compiler::compile_source(source).expect("فشل Compiler");
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk_for_vm);
     let vm_start = std::time::Instant::now();
-    let vm_result = vm.run(&chunk);
+    let vm_result = vm.run();
     let vm_time = vm_start.elapsed();
     println!("   VM: {:?}", vm_time);
     
-    // JIT
+    // JIT - ترجمة منفصلة
+    let chunk_for_jit = Compiler::compile_source(source).expect("فشل Compiler");
     let mut jit = CompleteV2JitCompiler::new();
     let mut globals = Rc::new(RefCell::new(Environment::new()));
     let jit_start = std::time::Instant::now();
-    let jit_result = jit.execute(&chunk, &mut globals);
+    let jit_result = jit.execute(&chunk_for_jit, &mut globals);
     let jit_time = jit_start.elapsed();
     println!("   JIT: {:?}", jit_time);
     
-    assert!(interp_result.is_ok() && vm_result.is_ok() && jit_result.is_ok());
+    assert!(interp_result.is_ok() && matches!(vm_result, ExecutionResult::Ok(_)) && jit_result.is_ok());
 }
 
 /// اختبار معالجة الأخطاء الشامل
@@ -315,7 +320,8 @@ fn test_full_error_handling() {
     ];
     
     let mut passed = 0;
-    for (source, description) in error_cases {
+    let total = error_cases.len();
+    for (source, _description) in &error_cases {
         let result = Parser::parse(source);
         if result.is_err() {
             passed += 1;
@@ -323,7 +329,7 @@ fn test_full_error_handling() {
     }
     
     println!("✅ test_full_error_handling: {} من {} أخطاء تم اكتشافها", 
-             passed, error_cases.len());
+             passed, total);
 }
 
 /// اختبار البرامج الواقعية - نظام تسوق
@@ -333,8 +339,8 @@ fn test_realistic_shopping_system() {
         // نظام سلة التسوق
         صنف منتج:
             متغير اسم = ""
-            متvariable سعر = 0
-            متvariable كمية = 0
+            متغير سعر = 0
+            متغير كمية = 0
             
             دالة جديد(اسم، سعر، كمية):
                 هذا.اسم = اسم
@@ -345,13 +351,13 @@ fn test_realistic_shopping_system() {
                 أرجع هذا.سعر * هذا.كمية
         
         صنف سلة_تسوق:
-            متvariable منتجات = []
+            متغير منتجات = []
             
             دالة أضف(منتج):
                 هذا.منتجات.أضف(منتج)
             
             دالة إجمالي():
-                متvariable مجموع = 0
+                متغير مجموع = 0
                 لكل منتج في هذا.منتجات:
                     مجموع = مجموع + منتج.المجموع()
                 أرجع مجموع
@@ -366,7 +372,7 @@ fn test_realistic_shopping_system() {
                 طباعة("الإجمالي: " + هذا.إجمالي())
         
         // إنشاء سلة
-        متvariable سلة = سلة_تسوق()
+        متغير سلة = سلة_تسوق()
         سلة.أضف(منتج.جديد("لابتوب"، 1500، 2))
         سلة.أضف(منتج.جديد("هاتف"، 800، 3))
         سلة.أضف(منتج.جديد("سماعات"، 150، 5))
@@ -385,13 +391,13 @@ fn test_realistic_shopping_system() {
 fn test_full_simple_game() {
     let source = r#"
         // لعبة تخمين الرقم
-        متvariable الرقم_السري = 42
-        متvariable محاولات = 0
-        متvariable أقصى_محاولات = 5
-        متvariable فوز = خطأ
+        متغير الرقم_السري = 42
+        متغير محاولات = 0
+        متغير أقصى_محاولات = 5
+        متغير فوز = خطأ
         
         // محاكاة التخمين
-        متvariable تخمينات = [10، 30، 50، 42]
+        متغير تخمينات = [10، 30، 50، 42]
         
         لكل تخمين في تخمينات:
             محاولات = محاولات + 1

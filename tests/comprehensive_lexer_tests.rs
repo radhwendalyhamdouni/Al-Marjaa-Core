@@ -845,7 +845,7 @@ mod performance_tests {
 
         let start = Instant::now();
         let mut lexer = Lexer::new(&source);
-        let tokens = lexer.tokenize().expect("فشل في التحليل");
+        let _tokens = lexer.tokenize().expect("فشل في التحليل");
         let elapsed = start.elapsed();
 
         println!("تحليل نص طويل (10000 حرف): {:?}", elapsed);

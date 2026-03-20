@@ -2,18 +2,18 @@
 // اختبارات آلة البايت كود - Bytecode VM Tests
 // ═══════════════════════════════════════════════════════════════════════════════
 
-use almarjaa::bytecode::{Compiler, VM, OpCode, Chunk};
+use almarjaa::bytecode::{Compiler, VM, OpCode, Chunk, ExecutionResult};
 
 /// اختبار إنشاء Chunk
 #[test]
 fn test_chunk_creation() {
     let mut chunk = Chunk::new();
     
-    // إضافة تعليمة
-    chunk.write_op(OpCode::OpConstant);
-    chunk.write_constant(42.0);
+    // إضافة تعليمات
+    chunk.emit(OpCode::PushNumber(42.0));
+    chunk.emit(OpCode::Halt);
     
-    assert_eq!(chunk.code().len(), 2, "يجب أن يكون هناك تعليمتين");
+    assert_eq!(chunk.len(), 2, "يجب أن يكون هناك تعليمتين");
     println!("✅ test_chunk_creation");
 }
 
@@ -21,10 +21,12 @@ fn test_chunk_creation() {
 #[test]
 fn test_compile_simple() {
     let source = "10 + 20";
-    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let result = Compiler::compile_source(source);
     
-    assert!(!chunk.code().is_empty(), "يجب أن يكون هناك تعليمات");
-    println!("✅ test_compile_simple: {} تعليمة", chunk.code().len());
+    assert!(result.is_ok(), "فشل في الترجمة: {:?}", result.err());
+    let chunk = result.unwrap();
+    assert!(!chunk.is_empty(), "يجب أن يكون هناك تعليمات");
+    println!("✅ test_compile_simple: {} تعليمة", chunk.len());
 }
 
 /// اختبار ترجمة متغير
@@ -34,10 +36,12 @@ fn test_compile_variable() {
         متغير س = 10
         طباعة(س)
     "#;
-    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let result = Compiler::compile_source(source);
     
-    assert!(!chunk.code().is_empty());
-    println!("✅ test_compile_variable: {} تعليمة", chunk.code().len());
+    assert!(result.is_ok(), "فشل في الترجمة: {:?}", result.err());
+    let chunk = result.unwrap();
+    assert!(!chunk.is_empty());
+    println!("✅ test_compile_variable: {} تعليمة", chunk.len());
 }
 
 /// اختبار ترجمة دالة
@@ -49,10 +53,12 @@ fn test_compile_function() {
         
         جمع(3، 5)
     "#;
-    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let result = Compiler::compile_source(source);
     
-    assert!(!chunk.code().is_empty());
-    println!("✅ test_compile_function: {} تعليمة", chunk.code().len());
+    assert!(result.is_ok(), "فشل في الترجمة: {:?}", result.err());
+    let chunk = result.unwrap();
+    assert!(!chunk.is_empty());
+    println!("✅ test_compile_function: {} تعليمة", chunk.len());
 }
 
 /// اختبار ترجمة شرط
@@ -65,10 +71,12 @@ fn test_compile_conditional() {
         وإلا:
             طباعة("صغير")
     "#;
-    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let result = Compiler::compile_source(source);
     
-    assert!(!chunk.code().is_empty());
-    println!("✅ test_compile_conditional: {} تعليمة", chunk.code().len());
+    assert!(result.is_ok(), "فشل في الترجمة: {:?}", result.err());
+    let chunk = result.unwrap();
+    assert!(!chunk.is_empty());
+    println!("✅ test_compile_conditional: {} تعليمة", chunk.len());
 }
 
 /// اختبار ترجمة حلقة
@@ -79,10 +87,12 @@ fn test_compile_loop() {
         بينما س < 10:
             س = س + 1
     "#;
-    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let result = Compiler::compile_source(source);
     
-    assert!(!chunk.code().is_empty());
-    println!("✅ test_compile_loop: {} تعليمة", chunk.code().len());
+    assert!(result.is_ok(), "فشل في الترجمة: {:?}", result.err());
+    let chunk = result.unwrap();
+    assert!(!chunk.is_empty());
+    println!("✅ test_compile_loop: {} تعليمة", chunk.len());
 }
 
 /// اختبار تشغيل VM بسيط
@@ -91,10 +101,11 @@ fn test_vm_simple() {
     let source = "10 + 20";
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok(), "فشل في تشغيل VM: {:?}", result.err());
+    assert!(matches!(result, ExecutionResult::Ok(_)), "فشل في تشغيل VM: {:?}", result);
     println!("✅ test_vm_simple");
 }
 
@@ -108,10 +119,11 @@ fn test_vm_variables() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_variables");
 }
 
@@ -126,10 +138,11 @@ fn test_vm_function() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_function");
 }
 
@@ -144,10 +157,11 @@ fn test_vm_loop() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_loop");
 }
 
@@ -160,10 +174,11 @@ fn test_vm_list() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_list");
 }
 
@@ -174,12 +189,13 @@ fn test_vm_dict() {
         متغير شخص = {اسم: "أحمد"، عمر: 25}
         شخص["عمر"]
     "#;
-    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let chunk = Compiler::compile_source(source).expect("فشل في التريمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_dict");
 }
 
@@ -196,10 +212,11 @@ fn test_vm_recursion() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_recursion");
 }
 
@@ -210,15 +227,16 @@ fn test_vm_closure() {
         دالة مضاعف(عامل):
             أرجع دالة(س) => س * عامل
         
-        متعرض ضعف = مضاعف(2)
+        متغير ضعف = مضاعف(2)
         ضعف(21)
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_closure");
 }
 
@@ -233,11 +251,12 @@ fn test_vm_performance() {
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
     let start = std::time::Instant::now();
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     let elapsed = start.elapsed();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_vm_performance: {:?}", elapsed);
     assert!(elapsed.as_millis() < 3000, "يجب أن يكون أقل من 3 ثواني");
 }
@@ -255,11 +274,12 @@ fn test_stack_overflow_protection() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
     // إما أن ينجح أو يفشل بسبب حماية الـ stack
-    println!("✅ test_stack_overflow_protection: {:?}", result.is_ok());
+    println!("✅ test_stack_overflow_protection: {:?}", matches!(result, ExecutionResult::Ok(_)));
 }
 
 /// اختبار المعاملات المتقدمة
@@ -272,10 +292,11 @@ fn test_advanced_operators() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_advanced_operators");
 }
 
@@ -290,10 +311,11 @@ fn test_complex_logical() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_complex_logical");
 }
 
@@ -308,10 +330,11 @@ fn test_pipe_operator() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_pipe_operator");
 }
 
@@ -323,9 +346,10 @@ fn test_nested_expressions() {
     "#;
     let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
     
-    let mut vm = VM::new();
-    let result = vm.run(&chunk);
+    let mut vm = VM::with_fresh_env();
+    vm.load(chunk);
+    let result = vm.run();
     
-    assert!(result.is_ok());
+    assert!(matches!(result, ExecutionResult::Ok(_)));
     println!("✅ test_nested_expressions");
 }

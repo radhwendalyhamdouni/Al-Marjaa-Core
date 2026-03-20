@@ -9,7 +9,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 use almarjaa::Interpreter;
-use almarjaa::parser::Parser;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // دوال مساعدة
@@ -17,26 +16,17 @@ use almarjaa::parser::Parser;
 
 /// تشغيل كود وإرجاع النتيجة
 fn run_code(source: &str) -> Result<String, String> {
-    let program = Parser::parse(source)
-        .map_err(|e| format!("خطأ في التحليل: {:?}", e))?;
-
     let mut interpreter = Interpreter::new();
-    interpreter.run(&program)
+    interpreter.run(source)
+        .map(|v| format!("{:?}", v.borrow()))
         .map_err(|e| format!("خطأ في التنفيذ: {:?}", e))
 }
 
 /// تشغيل كود مع التقاط المخرجات
+#[allow(dead_code)]
 fn run_and_capture_output(source: &str) -> Vec<String> {
-    let program = match Parser::parse(source) {
-        Ok(p) => p,
-        Err(e) => {
-            println!("خطأ في التحليل: {:?}", e);
-            return vec![];
-        }
-    };
-
     let mut interpreter = Interpreter::new();
-    match interpreter.run(&program) {
+    match interpreter.run(source) {
         Ok(_) => vec!["نجاح".to_string()],
         Err(e) => {
             println!("خطأ في التنفيذ: {:?}", e);
@@ -929,7 +919,7 @@ mod performance_tests {
         "#;
 
         let start = Instant::now();
-        let result = run_code(source);
+        let _result = run_code(source);
         let elapsed = start.elapsed();
 
         println!("حلقة 10000 تكرار: {:?}", elapsed);
@@ -949,7 +939,7 @@ mod performance_tests {
         "#;
 
         let start = Instant::now();
-        let result = run_code(source);
+        let _result = run_code(source);
         let elapsed = start.elapsed();
 
         println!("فيبوناتشي(20): {:?}", elapsed);
@@ -965,7 +955,7 @@ mod performance_tests {
         "#;
 
         let start = Instant::now();
-        let result = run_code(source);
+        let _result = run_code(source);
         let elapsed = start.elapsed();
 
         println!("قائمة 1000 عنصر: {:?}", elapsed);
