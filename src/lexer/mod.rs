@@ -167,7 +167,8 @@ impl Lexer {
             ("شبكة_عرض", TokenType::Grid), // إعادة تسمية لتجنب التعارض مع دالة شبكة() للذكاء الاصطناعي
             ("مرن", TokenType::Flex),
             ("كومة", TokenType::Stack),
-            ("التفاف", TokenType::Wrap),
+            ("التفاف_نص", TokenType::Wrap),  // للـ UI - التفاف النص
+            ("لف", TokenType::Wrap),  // بديل مختصر للـ UI
             ("فجوة", TokenType::Gap),
             ("محاذاة", TokenType::Align),
             ("تبرير", TokenType::Justify),

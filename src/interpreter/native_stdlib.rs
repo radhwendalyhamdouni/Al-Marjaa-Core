@@ -679,6 +679,255 @@ pub fn define_math(env: &mut Environment) {
         false,
     );
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // دوال القطوع الزائدة (Hyperbolic Functions)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // sinh - جيب زائدي
+    env.define(
+        "جيب_زائدي",
+        Value::NativeFunction {
+            name: "جيب_زائدي".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.sinh()))))
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "sinh",
+        Value::NativeFunction {
+            name: "sinh".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.sinh()))))
+            },
+        },
+        false,
+    );
+
+    // cosh - جيب تمام زائدي
+    env.define(
+        "جتا_زائدي",
+        Value::NativeFunction {
+            name: "جتا_زائدي".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.cosh()))))
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "cosh",
+        Value::NativeFunction {
+            name: "cosh".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.cosh()))))
+            },
+        },
+        false,
+    );
+
+    // tanh - ظل زائدي
+    env.define(
+        "ظل_زائدي",
+        Value::NativeFunction {
+            name: "ظل_زائدي".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.tanh()))))
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "tanh",
+        Value::NativeFunction {
+            name: "tanh".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.tanh()))))
+            },
+        },
+        false,
+    );
+
+    // asinh - جيب زائدي معكوس
+    env.define(
+        "جيب_زائدي_معكوس",
+        Value::NativeFunction {
+            name: "جيب_زائدي_معكوس".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.asinh()))))
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "asinh",
+        Value::NativeFunction {
+            name: "asinh".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                Ok(Rc::new(RefCell::new(Value::Number(n.asinh()))))
+            },
+        },
+        false,
+    );
+
+    // acosh - جيب تمام زائدي معكوس
+    env.define(
+        "جتا_زائدي_معكوس",
+        Value::NativeFunction {
+            name: "جتا_زائدي_معكوس".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n < 1.0 {
+                    return Err("جتا_زائدي_معكوس: المدخل يجب أن يكون ≥ 1".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.acosh()))))
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "acosh",
+        Value::NativeFunction {
+            name: "acosh".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n < 1.0 {
+                    return Err("acosh: input must be >= 1".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.acosh()))))
+            },
+        },
+        false,
+    );
+
+    // atanh - ظل زائدي معكوس
+    env.define(
+        "ظل_زائدي_معكوس",
+        Value::NativeFunction {
+            name: "ظل_زائدي_معكوس".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n <= -1.0 || n >= 1.0 {
+                    return Err("ظل_زائدي_معكوس: المدخل يجب أن يكون بين -1 و 1 (حصرياً)".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.atanh()))))
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "atanh",
+        Value::NativeFunction {
+            name: "atanh".to_string(),
+            func: |a| {
+                let n = a[0].borrow().to_number()?;
+                if n <= -1.0 || n >= 1.0 {
+                    return Err("atanh: input must be between -1 and 1 (exclusive)".into());
+                }
+                Ok(Rc::new(RefCell::new(Value::Number(n.atanh()))))
+            },
+        },
+        false,
+    );
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // دوال مفيدة أخرى
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    // is_nan - التحقق من NaN
+    env.define(
+        "هل_نن",
+        Value::NativeFunction {
+            name: "هل_نن".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Boolean(n.is_nan())))),
+                _ => Ok(Rc::new(RefCell::new(Value::Boolean(false)))),
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "is_nan",
+        Value::NativeFunction {
+            name: "is_nan".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Boolean(n.is_nan())))),
+                _ => Ok(Rc::new(RefCell::new(Value::Boolean(false)))),
+            },
+        },
+        false,
+    );
+
+    // is_infinite - التحقق من اللانهاية
+    env.define(
+        "هل_لانهاية",
+        Value::NativeFunction {
+            name: "هل_لانهاية".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Boolean(n.is_infinite())))),
+                _ => Ok(Rc::new(RefCell::new(Value::Boolean(false)))),
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "is_infinite",
+        Value::NativeFunction {
+            name: "is_infinite".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Boolean(n.is_infinite())))),
+                _ => Ok(Rc::new(RefCell::new(Value::Boolean(false)))),
+            },
+        },
+        false,
+    );
+
+    // is_finite - التحقق من العدد المحدود
+    env.define(
+        "هل_محدود",
+        Value::NativeFunction {
+            name: "هل_محدود".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Boolean(n.is_finite())))),
+                _ => Ok(Rc::new(RefCell::new(Value::Boolean(false)))),
+            },
+        },
+        false,
+    );
+
+    env.define(
+        "is_finite",
+        Value::NativeFunction {
+            name: "is_finite".to_string(),
+            func: |a| match &*a[0].borrow() {
+                Value::Number(n) => Ok(Rc::new(RefCell::new(Value::Boolean(n.is_finite())))),
+                _ => Ok(Rc::new(RefCell::new(Value::Boolean(false)))),
+            },
+        },
+        false,
+    );
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // الثوابت الرياضية
+    // ═══════════════════════════════════════════════════════════════════════════
+
     // PI - ثابت باي
     env.define(
         "PI",
@@ -697,6 +946,84 @@ pub fn define_math(env: &mut Environment) {
     env.define(
         "TAU",
         Value::Number(std::f64::consts::TAU),
+        true,
+    );
+
+    // INFINITY - اللانهاية الموجبة
+    env.define(
+        "لانهاية",
+        Value::Number(f64::INFINITY),
+        true,
+    );
+
+    env.define(
+        "INFINITY",
+        Value::Number(f64::INFINITY),
+        true,
+    );
+
+    // NEG_INFINITY - اللانهاية السالبة
+    env.define(
+        "سالب_لانهاية",
+        Value::Number(f64::NEG_INFINITY),
+        true,
+    );
+
+    env.define(
+        "NEG_INFINITY",
+        Value::Number(f64::NEG_INFINITY),
+        true,
+    );
+
+    // NAN - ليس رقماً
+    env.define(
+        "نن",
+        Value::Number(f64::NAN),
+        true,
+    );
+
+    env.define(
+        "NAN",
+        Value::Number(f64::NAN),
+        true,
+    );
+
+    // SQRT2 - جذر 2
+    env.define(
+        "جذر2",
+        Value::Number(std::f64::consts::SQRT_2),
+        true,
+    );
+
+    env.define(
+        "SQRT2",
+        Value::Number(std::f64::consts::SQRT_2),
+        true,
+    );
+
+    // LN2 - اللوغاريتم الطبيعي لـ 2
+    env.define(
+        "لوغ2_ثابت",
+        Value::Number(std::f64::consts::LN_2),
+        true,
+    );
+
+    env.define(
+        "LN2",
+        Value::Number(std::f64::consts::LN_2),
+        true,
+    );
+
+    // LN10 - اللوغاريتم الطبيعي لـ 10
+    env.define(
+        "لوغ10_ثابت",
+        Value::Number(std::f64::consts::LN_10),
+        true,
+    );
+
+    env.define(
+        "LN10",
+        Value::Number(std::f64::consts::LN_10),
         true,
     );
 }
