@@ -235,8 +235,8 @@ impl SimdProcessor {
                 sum = self.horizontal_sum_avx(sum_vec);
                 
                 // جمع العناصر المتبقية
-                for i in (len / 4) * 4..len {
-                    sum += a[i];
+                for &val in a.iter().skip((len / 4) * 4) {
+                    sum += val;
                 }
             }
         } else {
@@ -307,9 +307,9 @@ impl SimdProcessor {
                 // استخراج القيمة الأكبر من المتجه
                 let arr: [f64; 4] = mem::transmute(max_vec);
                 max_val = arr[0].max(arr[1]).max(arr[2]).max(arr[3]);
-                
-                for i in (len / 4) * 4..len {
-                    max_val = max_val.max(a[i]);
+
+                for &val in a.iter().skip((len / 4) * 4) {
+                    max_val = max_val.max(val);
                 }
             }
         } else {
@@ -345,9 +345,9 @@ impl SimdProcessor {
                 
                 let arr: [f64; 4] = mem::transmute(min_vec);
                 min_val = arr[0].min(arr[1]).min(arr[2]).min(arr[3]);
-                
-                for i in (len / 4) * 4..len {
-                    min_val = min_val.min(a[i]);
+
+                for &val in a.iter().skip((len / 4) * 4) {
+                    min_val = min_val.min(val);
                 }
             }
         } else {

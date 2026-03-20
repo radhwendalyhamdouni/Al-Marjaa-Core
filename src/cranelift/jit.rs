@@ -92,12 +92,8 @@ impl JitCompiler {
                 Ok(0.0)
             }
 
-            Stmt::Return(value) => {
-                match value {
-                    Some(expr) => self.execute_expression(expr),
-                    None => Ok(0.0),
-                }
-            }
+            Stmt::Return(Some(expr)) => self.execute_expression(expr),
+            Stmt::Return(None) => Ok(0.0),
 
             Stmt::Expression(expr) => self.execute_expression(expr),
 

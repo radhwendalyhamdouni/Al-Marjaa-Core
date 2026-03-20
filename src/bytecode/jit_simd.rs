@@ -455,7 +455,7 @@ impl SimdPatternDetector {
                     "Add" => format!("simd.جمع({}, {})", list1, list2),
                     "Sub" => format!("simd.طرح({}, {})", list1, list2),
                     "Mul" => format!("simd.ضرب({}, {})", list1, list2),
-                    _ => format!("// لا يمكن تحسينه")
+                    _ => "// لا يمكن تحسينه".to_string()
                 }
             }
             SimdPattern::ScalarOp { op: _, list, scalar } => {

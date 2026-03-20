@@ -452,15 +452,15 @@ impl StackTrace {
 
         output.push_str(&"\n".bright_black().to_string());
         output.push_str(&"════════════════════════════════════════════════════════════════".bright_black().to_string());
-        output.push_str(&"\n");
+        output.push('\n');
         output.push_str(&"                    📚 تتبع المكالمة                            ".bright_cyan().bold().to_string());
-        output.push_str(&"\n");
+        output.push('\n');
         output.push_str(&"════════════════════════════════════════════════════════════════".bright_black().to_string());
-        output.push_str(&"\n\n");
+        output.push_str("\n\n");
 
         if self.frames.is_empty() {
             output.push_str(&"  (لا توجد معلومات تتبع)".dimmed().to_string());
-            output.push_str(&"\n");
+            output.push('\n');
             return output;
         }
 
@@ -783,9 +783,9 @@ impl AlMarjaaError {
         let mut output = String::new();
 
         // العنوان الرئيسي
-        output.push_str("\n");
+        output.push('\n');
         output.push_str(&"╔════════════════════════════════════════════════════════════════╗".bright_red().to_string());
-        output.push_str("\n");
+        output.push('\n');
         output.push_str(&format!(
             "║  {} {} {} [{}]\n",
             self.severity.icon(),
@@ -798,7 +798,7 @@ impl AlMarjaaError {
 
         // الرسالة الرئيسية
         output.push_str(&format!("{} {}\n", "📝 الرسالة:".bright_cyan().bold(), self.message.bright_white()));
-        output.push_str("\n");
+        output.push('\n');
 
         // الموقع الدقيق
         if let Some(ref loc) = self.location {
@@ -812,7 +812,7 @@ impl AlMarjaaError {
 
             // عرض السياق مع الكود
             if !loc.line_content.is_empty() || !self.code_context.is_empty() {
-                output.push_str("\n");
+                output.push('\n');
 
                 // إذا كان هناك سياق متعدد الأسطر
                 if !self.code_context.is_empty() {
@@ -864,7 +864,7 @@ impl AlMarjaaError {
                     ));
                 }
             }
-            output.push_str("\n");
+            output.push('\n');
         }
 
         // Stack Trace
@@ -874,7 +874,7 @@ impl AlMarjaaError {
 
         // الاقتراحات
         if !self.suggestions.is_empty() {
-            output.push_str("\n");
+            output.push('\n');
             output.push_str(&format!("{} اقتراحات الإصلاح:\n", "💡".bright_yellow()));
             for (i, suggestion) in self.suggestions.iter().enumerate() {
                 output.push_str(&format!(
@@ -890,7 +890,7 @@ impl AlMarjaaError {
 
         // المساعدة
         if let Some(ref help) = self.help {
-            output.push_str("\n");
+            output.push('\n');
             output.push_str(&format!("{} {}\n", "ℹ️ مساعدة:".bright_cyan(), help.bright_white()));
         }
 
@@ -1222,7 +1222,7 @@ impl ErrorReporter {
         if !self.errors.is_empty() {
             for error in &self.errors {
                 output.push_str(&error.format_colored());
-                output.push_str("\n");
+                output.push('\n');
             }
         }
 
@@ -1230,14 +1230,14 @@ impl ErrorReporter {
         if !self.warnings.is_empty() {
             for warning in &self.warnings {
                 output.push_str(&warning.format_colored());
-                output.push_str("\n");
+                output.push('\n');
             }
         }
 
         // الملخص
         output.push_str(&"\n".bright_black().to_string());
         output.push_str(&"════════════════════════════════════════════════════════════════".bright_black().to_string());
-        output.push_str(&"\n");
+        output.push('\n');
 
         let summary = format!(
             "📊 الملخص: {} خطأ، {} تحذير",
@@ -1253,7 +1253,7 @@ impl ErrorReporter {
             output.push_str(&"✅ لا توجد أخطاء أو تحذيرات".bright_green().to_string());
         }
 
-        output.push_str(&"\n".to_string());
+        output.push('\n');
 
         output
     }
