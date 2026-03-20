@@ -133,6 +133,14 @@ path = "tests/integration_tests.rs"
 name = "stdlib_tests"
 path = "tests/stdlib_tests.rs"
 
+[[test]]
+name = "comprehensive_lexer_tests"
+path = "tests/comprehensive_lexer_tests.rs"
+
+[[test]]
+name = "comprehensive_interpreter_tests"
+path = "tests/comprehensive_interpreter_tests.rs"
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # المعايير (Benchmarks)
 # ═══════════════════════════════════════════════════════════════════════════════

@@ -2,6 +2,9 @@
 // Professional Error System for Al-Marjaa Language
 // Provides: Spans, Error Codes, Source Context, Arabic Messages, Suggestions, Colors
 
+pub mod advanced_error;
+pub mod reporter;
+
 use colored::Colorize;
 use std::fmt;
 
