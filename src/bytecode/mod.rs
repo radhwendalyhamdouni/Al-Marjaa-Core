@@ -42,6 +42,7 @@ pub mod wasm_target;
 pub mod register_vm;  // Register-based VM (أسرع 2-3x)
 pub mod ffi;         // Foreign Function Interface
 pub mod simd;        // SIMD Operations (تسريع 4-8x)
+pub mod jit_simd;    // JIT-SIMD Integration (تسريع تلقائي)
 
 // إعادة تصدير الأنواع الرئيسية
 pub use benchmarks::{print_benchmark_results, run_all_benchmarks, BenchmarkResult};
@@ -149,6 +150,14 @@ pub use ffi::{
 // ═══════════════════════════════════════════════════════════════════════════════
 pub use simd::{
     SimdOp, SimdResult,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// تصدير JIT-SIMD Integration
+// ═══════════════════════════════════════════════════════════════════════════════
+pub use jit_simd::{
+    SimdJitOp, SimdJitOptimizer, SimdJitResult, SimdJitStats,
+    SimdOpInfo, SimdPattern, SimdPatternDetector,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
