@@ -41,6 +41,7 @@ pub mod wasm_target;
 // التحسينات الجديدة للإصدار 4.0
 pub mod register_vm;  // Register-based VM (أسرع 2-3x)
 pub mod ffi;         // Foreign Function Interface
+pub mod simd;        // SIMD Operations (تسريع 4-8x)
 
 // إعادة تصدير الأنواع الرئيسية
 pub use benchmarks::{print_benchmark_results, run_all_benchmarks, BenchmarkResult};
@@ -141,6 +142,13 @@ pub use register_vm::{
 pub use ffi::{
     CallbackId, CallbackManager, FfiFunction, FfiLibrary, FfiManager, FfiSignature, FfiStats,
     FfiType, FfiValue, NativeFunction,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// تصدير SIMD Operations
+// ═══════════════════════════════════════════════════════════════════════════════
+pub use simd::{
+    SimdOp, SimdProcessor, SimdResult, SimdStats,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

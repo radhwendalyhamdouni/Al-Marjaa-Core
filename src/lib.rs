@@ -85,6 +85,17 @@ pub use linter::{
 pub use parser::Parser;
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// تصدير Module System & Package Manager
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub use modules::{
+    ExportKind, ExportStatement, ImportKind, ImportStatement, Module, ModuleError, ModuleId,
+    ModuleManager, ModuleManagerStats, ModuleStats, SourceLocation, TypeDefinition,
+    InstalledPackage, PackageError, PackageInfo, PackageManager, PackageManagerStats,
+    PackageManifest, PackageSource,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // تصدير Cranelift Backend (افتراضي - Rust-native بدون متطلبات خارجية)
 // ═══════════════════════════════════════════════════════════════════════════════
 
