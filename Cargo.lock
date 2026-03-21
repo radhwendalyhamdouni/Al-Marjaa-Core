@@ -176,6 +176,7 @@ name = "almarjaa-network"
 version = "3.4.0"
 dependencies = [
  "chrono",
+ "rand 0.8.5",
  "serde",
  "serde_json",
  "uuid",
@@ -187,6 +188,8 @@ version = "3.4.0"
 dependencies = [
  "chrono",
  "ndarray",
+ "num_cpus",
+ "rand 0.8.5",
  "serde",
  "serde_json",
 ]
