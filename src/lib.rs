@@ -77,6 +77,7 @@ pub use bytecode::{
 pub use error::{AlMarjaaError, ErrorCode, Position, Severity, Span};
 pub use formatter::format_source;
 pub use interpreter::Interpreter;
+pub use interpreter::value::Environment;
 pub use lexer::Lexer;
 pub use linter::{
     lint_program, lint_program_with_config, lint_source, lint_source_with_config, LintConfig,

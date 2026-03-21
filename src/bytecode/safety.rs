@@ -8,9 +8,8 @@
 // - Resource tracking
 // ═══════════════════════════════════════════════════════════════════════════════
 
-use std::cell::Cell;
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::RwLock;
 use std::time::{Duration, Instant};
 
 /// Maximum memory that can be allocated (in bytes)

@@ -1,6 +1,7 @@
 pub mod tokens;
 
-use tokens::{Token, TokenType};
+pub use tokens::TokenType;
+use tokens::Token;
 use unicode_segmentation::UnicodeSegmentation;
 
 /// محسن للـ Lexer مع String Interning

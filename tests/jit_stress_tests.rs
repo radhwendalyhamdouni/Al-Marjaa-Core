@@ -360,8 +360,9 @@ fn test_vm_concurrent_execution() {
             let result = vm.run();
             
             let msg = match result {
-                Ok(_) => format!("Thread {} OK", thread_id),
-                Err(e) => format!("Thread {} ERR: {}", thread_id, e),
+                almarjaa::bytecode::ExecutionResult::Ok(_) => format!("Thread {} OK", thread_id),
+                almarjaa::bytecode::ExecutionResult::Error(e) => format!("Thread {} ERR: {}", thread_id, e),
+                _ => format!("Thread {} OTHER", thread_id),
             };
             
             results.lock().unwrap().push(msg);

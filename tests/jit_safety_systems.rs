@@ -159,7 +159,7 @@ impl std::error::Error for MemoryError {}
 /// ═══════════════════════════════════════════════════════════════════════════════
 /// حدود التنفيذ
 /// ═══════════════════════════════════════════════════════════════════════════════
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExecutionLimits {
     /// حد التعليمات
     pub max_instructions: u64,

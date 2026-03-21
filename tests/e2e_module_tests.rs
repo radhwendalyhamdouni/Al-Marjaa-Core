@@ -313,7 +313,7 @@ fn test_module_missing_module_error() {
     // Should fail gracefully with informative error
     match result {
         Err(e) => {
-            println!("✅ test_module_missing_module_error: خطأ متوقع - {}", e);
+            println!("✅ test_module_missing_module_error: خطأ متوقع - {:?}", e);
         },
         Ok(_) => {
             println!("⚠️ test_module_missing_module_error: لم يُتوقع النجاح");

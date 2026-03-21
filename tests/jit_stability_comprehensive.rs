@@ -456,16 +456,22 @@ fn test_vm_concurrent_execution_shared_nothing() {
                     let mut vm = VM::with_fresh_env();
                     vm.load(chunk);
                     
-                    match vm.run() {
-                        Ok(_) => {
+                    let result = vm.run();
+                    match result {
+                        almarjaa::bytecode::ExecutionResult::Ok(_) => {
                             results.lock().unwrap().push(
                                 format!("Thread {} OK", thread_id)
                             );
                         },
-                        Err(e) => {
+                        almarjaa::bytecode::ExecutionResult::Error(e) => {
                             errors.fetch_add(1, Ordering::SeqCst);
                             results.lock().unwrap().push(
                                 format!("Thread {} ERR: {}", thread_id, e)
+                            );
+                        },
+                        _ => {
+                            results.lock().unwrap().push(
+                                format!("Thread {} OTHER", thread_id)
                             );
                         }
                     }
