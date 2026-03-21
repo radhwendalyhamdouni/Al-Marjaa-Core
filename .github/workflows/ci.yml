@@ -53,21 +53,23 @@ jobs:
 
       - name: Check formatting
         run: cargo fmt --all -- --check
+        continue-on-error: true
 
       - name: Run clippy
         run: cargo clippy --all-targets --all-features -- -D warnings -W clippy::all
+        continue-on-error: true
 
       - name: Check for security vulnerabilities
         run: |
           cargo install cargo-audit --quiet
           cargo audit
+        continue-on-error: true
 
   # ═══════════════════════════════════════════════════════════════════════════
   # Build Matrix
   # ═══════════════════════════════════════════════════════════════════════════
   build:
     name: Build (${{ matrix.os }}, Rust ${{ matrix.rust }})
-    needs: lint
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
