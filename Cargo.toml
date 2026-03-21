@@ -173,6 +173,22 @@ path = "tests/e2e_real_world.rs"
 name = "arabic_fuzz_generator"
 path = "tests/arabic_fuzz_generator.rs"
 
+[[test]]
+name = "jit_stability_comprehensive"
+path = "tests/jit_stability_comprehensive.rs"
+
+[[test]]
+name = "e2e_sqlite_tests"
+path = "tests/e2e_sqlite_tests.rs"
+
+[[test]]
+name = "e2e_crypto_tests"
+path = "tests/e2e_crypto_tests.rs"
+
+[[test]]
+name = "e2e_module_tests"
+path = "tests/e2e_module_tests.rs"
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # المعايير (Benchmarks)
 # ═══════════════════════════════════════════════════════════════════════════════
