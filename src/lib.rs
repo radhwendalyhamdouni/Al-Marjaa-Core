@@ -15,6 +15,10 @@
 // Commercial use requires explicit written permission from the author.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// السماح بالأحرف العربية الخاصة (مثل التطويل ـ) في المعرفات
+// Allow Arabic special characters (like tatweel ـ) in identifiers
+#![allow(uncommon_codepoints)]
+
 // المكونات الأساسية
 pub mod bytecode;
 pub mod error;

@@ -22,6 +22,9 @@ const JIT_CACHE_SIZE: usize = 256;
 const MAX_STACK_SIZE: usize = 65536;
 
 /// أقصى عدد للتعليمات في الحلقة الواحدة
+/// ملاحظة: هذا الحد مهم لمنع الحلقات اللانهائية في الإنتاج
+/// يمكن تعديله عبر المتغير البيئي ALMARJAA_MAX_LOOP_ITERATIONS
+#[allow(dead_code)] // محجوز للاستخدام في نظام الأمان للحد من الحلقات اللانهائية
 const MAX_LOOP_ITERATIONS: u64 = 10_000_000;
 
 /// معرف دالة JIT
@@ -800,7 +803,10 @@ impl OptimizedExecutor {
     }
     
     /// التحقق من صحة المكدس
+    /// ملاحظة: هذه الدالة محجوزة للاستخدام في أنظمة الأمان المستقبلية
+    /// ستُستخدم للتحقق من حدود المكدس قبل العمليات الحساسة
     #[inline(always)]
+    #[allow(dead_code)] // محجوز لنظام الأمان - سيُستخدم في الإصدارات القادمة
     fn ensure_stack_size(&self, required: usize) -> Result<(), String> {
         if self.stack.len() < required {
             Err(format!(
@@ -820,6 +826,9 @@ impl OptimizedExecutor {
     }
     
     /// استرداد من خطأ - مسح المكدس وإعادة الحالة
+    /// ملاحظة: هذه الدالة محجوزة لنظام استرداد الأخطاء
+    /// ستُستخدم لإعادة تعيين الحالة عند حدوث أخطاء حرجة
+    #[allow(dead_code)] // محجوز لنظام استرداد الأخطاء - سيُستخدم في الإصدارات القادمة
     fn recover_from_error(&mut self) {
         self.stack.clear();
         self.locals.clear();
