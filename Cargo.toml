@@ -86,6 +86,28 @@ cranelift-jit = { version = "0.116", optional = true }
 target-lexicon = { version = "0.13", optional = true }
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# مكتبات Al-Marjaa الخارجية (اختياري)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# مكتبة الذكاء الاصطناعي
+almarjaa-ai = { path = "../al-marjaa-libraries/libs/ai", optional = true }
+
+# مكتبة قواعد البيانات
+almarjaa-database = { path = "../al-marjaa-libraries/libs/database", optional = true }
+
+# مكتبة الشبكات
+almarjaa-network = { path = "../al-marjaa-libraries/libs/network", optional = true }
+
+# مكتبة ONNX
+almarjaa-onnx = { path = "../al-marjaa-libraries/libs/onnx", optional = true }
+
+# مكتبة GPU
+almarjaa-gpu = { path = "../al-marjaa-libraries/libs/gpu", optional = true }
+
+# مكتبة الأتمتة الصناعية
+almarjaa-industrial = { path = "../al-marjaa-libraries/libs/industrial", optional = true }
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Feature Flags
 # ═══════════════════════════════════════════════════════════════════════════════
 [features]
@@ -114,8 +136,33 @@ crypto = [
 # المكتبة القياسية الكاملة
 full-stdlib = ["database", "network", "crypto"]
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# مكتبات Al-Marjaa الخارجية
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# مكتبة الذكاء الاصطناعي
+ai = ["almarjaa-ai"]
+
+# مكتبة قواعد البيانات المتقدمة
+database-advanced = ["almarjaa-database"]
+
+# مكتبة الشبكات المتقدمة
+network-advanced = ["almarjaa-network"]
+
+# مكتبة ONNX
+onnx = ["almarjaa-onnx"]
+
+# مكتبة GPU
+gpu = ["almarjaa-gpu"]
+
+# مكتبة الأتمتة الصناعية
+industrial = ["almarjaa-industrial"]
+
+# جميع المكتبات الخارجية
+all-libs = ["ai", "database-advanced", "network-advanced", "onnx", "gpu", "industrial"]
+
 # كل شيء (Core + جميع المكتبات)
-full = ["full-stdlib", "cranelift-backend"]
+full = ["full-stdlib", "cranelift-backend", "all-libs"]
 
 # اختبارات الأداء الثقيلة
 bench-heavy = []
