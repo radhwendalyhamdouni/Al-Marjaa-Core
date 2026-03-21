@@ -90,23 +90,23 @@ target-lexicon = { version = "0.13", optional = true }
 # يتم تحميلها تلقائياً من GitHub عند تفعيل الـ feature flag
 # ═══════════════════════════════════════════════════════════════════════════════
 
-# مكتبة الذكاء الاصطناعي
-almarjaa-ai = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
+# مكتبة الذكاء الاصطناعي (مستودع منفصل)
+almarjaa-ai = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-AI", branch = "main", optional = true }
 
-# مكتبة قواعد البيانات
-almarjaa-database = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
+# مكتبة قواعد البيانات (مستودع منفصل)
+almarjaa-database = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Database", branch = "main", optional = true }
 
-# مكتبة الشبكات
-almarjaa-network = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
+# مكتبة الشبكات (مستودع منفصل)
+almarjaa-network = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Network", branch = "main", optional = true }
 
-# مكتبة ONNX
-almarjaa-onnx = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
+# مكتبة ONNX (مستودع منفصل)
+almarjaa-onnx = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-ONNX", branch = "main", optional = true }
 
-# مكتبة GPU
-almarjaa-gpu = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
+# مكتبة GPU (مستودع منفصل)
+almarjaa-gpu = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-GPU", branch = "main", optional = true }
 
-# مكتبة الأتمتة الصناعية
-almarjaa-industrial = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
+# مكتبة الأتمتة الصناعية (مستودع منفصل)
+almarjaa-industrial = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Industrial", branch = "main", optional = true }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Feature Flags
