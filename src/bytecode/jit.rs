@@ -18,6 +18,12 @@ const JIT_THRESHOLD: u32 = 100;
 /// حجم كاش JIT
 const JIT_CACHE_SIZE: usize = 256;
 
+/// أقصى حجم للمكدس
+const MAX_STACK_SIZE: usize = 65536;
+
+/// أقصى عدد للتعليمات في الحلقة الواحدة
+const MAX_LOOP_ITERATIONS: u64 = 10_000_000;
+
 /// معرف دالة JIT
 pub type JitFunctionId = u64;
 
@@ -134,6 +140,10 @@ pub struct JitStats {
     pub optimizations_applied: u64,
     /// نسبة ضربات JIT
     pub jit_hit_rate: f64,
+    /// عدد أخطاء JIT
+    pub errors_recovered: u64,
+    /// عدد تحذيرات المكدس
+    pub stack_warnings: u64,
 }
 
 /// JIT Compiler
@@ -466,6 +476,14 @@ impl JitCompiler {
             return JitExecutionResult::Error("JIT معطل".into());
         }
 
+        // التحقق من حجم المكدس
+        if _ctx.stack.len() > MAX_STACK_SIZE {
+            self.stats.stack_warnings += 1;
+            return JitExecutionResult::Error(
+                format!("تجاوز حد المكدس: {} > {}", _ctx.stack.len(), MAX_STACK_SIZE)
+            );
+        }
+
         // تنفيذ الكود المترجم
         self.stats.jit_executions += 1;
 
@@ -736,33 +754,76 @@ impl OptimizedExecutor {
     where
         F: FnOnce(f64, f64) -> f64,
     {
+        // حماية من المكدس الفارغ
+        if self.stack.len() < 2 {
+            return Err(format!(
+                "خطأ في العملية الثنائية عند التعليمة {}: يحتاج معاملين، المكدس يحتوي على {} عنصر فقط",
+                self.ip,
+                self.stack.len()
+            ));
+        }
+        
         let b = self.stack.pop();
         let a = self.stack.pop();
 
         match (a, b) {
             (Some(a), Some(b)) => {
-                let a_val = a.borrow().to_number()?;
-                let b_val = b.borrow().to_number()?;
+                let a_val = a.borrow().to_number().map_err(|e| {
+                    format!("خطأ في تحويل المعامل الأول: {}", e)
+                })?;
+                let b_val = b.borrow().to_number().map_err(|e| {
+                    format!("خطأ في تحويل المعامل الثاني: {}", e)
+                })?;
+                
+                // التحقق من القيم الخاصة
+                let result = op(a_val, b_val);
+                if result.is_nan() {
+                    return Err(format!(
+                        "نتيجة غير صالحة (NaN) من العملية عند التعليمة {}",
+                        self.ip
+                    ));
+                }
+                if result.is_infinite() {
+                    // السماح بـ infinity ولكن تسجيل تحذير
+                    // نستمر مع القيمة اللانهائية
+                }
+                
                 self.stack
-                    .push(Rc::new(RefCell::new(Value::Number(op(a_val, b_val)))));
+                    .push(Rc::new(RefCell::new(Value::Number(result))));
                 Ok(())
             }
-            (None, Some(_)) => Err(format!(
-                "خطأ في العملية الثنائية عند التعليمة {}: المعامل الأول مفقود (حجم المكدس: {})",
-                self.ip,
-                self.stack.len()
-            )),
-            (Some(_), None) => Err(format!(
-                "خطأ في العملية الثنائية عند التعليمة {}: المعامل الثاني مفقود (حجم المكدس: {})",
-                self.ip,
-                self.stack.len()
-            )),
-            (None, None) => Err(format!(
-                "خطأ في العملية الثنائية عند التعليمة {}: المكدس فارغ تماماً (حجم المكدس: {})",
-                self.ip,
-                self.stack.len()
+            _ => Err(format!(
+                "خطأ غير متوقع في العملية الثنائية عند التعليمة {}",
+                self.ip
             )),
         }
+    }
+    
+    /// التحقق من صحة المكدس
+    #[inline(always)]
+    fn ensure_stack_size(&self, required: usize) -> Result<(), String> {
+        if self.stack.len() < required {
+            Err(format!(
+                "المكدس يحتوي على {} عنصر، يحتاج {} على الأقل",
+                self.stack.len(),
+                required
+            ))
+        } else if self.stack.len() > MAX_STACK_SIZE {
+            Err(format!(
+                "تجاوز حد المكدس الأقصى: {} > {}",
+                self.stack.len(),
+                MAX_STACK_SIZE
+            ))
+        } else {
+            Ok(())
+        }
+    }
+    
+    /// استرداد من خطأ - مسح المكدس وإعادة الحالة
+    fn recover_from_error(&mut self) {
+        self.stack.clear();
+        self.locals.clear();
+        self.ip = 0;
     }
 }
 
