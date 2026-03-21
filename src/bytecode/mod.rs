@@ -17,6 +17,7 @@
 // - WebAssembly Compilation Target
 // - GC-JIT Integration
 // - AOT (Ahead-of-Time) Compilation
+// - Safety Systems (Memory guards, Execution limits)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub mod advanced_jit;
@@ -34,6 +35,7 @@ pub mod jit_optimizer;
 pub mod opcodes;
 pub mod optimizer;
 pub mod pgo;
+pub mod safety;
 pub mod type_inference;
 pub mod vm;
 pub mod wasm_target;
@@ -158,6 +160,14 @@ pub use simd::{
 pub use jit_simd::{
     SimdJitOp, SimdJitOptimizer, SimdJitResult, SimdJitStats,
     SimdOpInfo, SimdPattern, SimdPatternDetector,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// تصدير Safety Systems (أنظمة الأمان)
+// ═══════════════════════════════════════════════════════════════════════════════
+pub use safety::{
+    BailoutReason, CallScopeGuard, ExecutionGuard, ExecutionLimits, ExecutionStats,
+    MemoryStats, MemoryTracker,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

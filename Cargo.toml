@@ -108,6 +108,7 @@ pretty_assertions = "1.4"
 criterion = "0.5"
 serial_test = "3.0"
 tempfile = "3.10"
+proptest = "1.5"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # إعدادات الاختبارات
@@ -133,6 +134,10 @@ name = "jit_tests"
 path = "tests/jit_tests.rs"
 
 [[test]]
+name = "jit_stress_tests"
+path = "tests/jit_stress_tests.rs"
+
+[[test]]
 name = "integration_tests"
 path = "tests/integration_tests.rs"
 
@@ -147,6 +152,26 @@ path = "tests/comprehensive_lexer_tests.rs"
 [[test]]
 name = "comprehensive_interpreter_tests"
 path = "tests/comprehensive_interpreter_tests.rs"
+
+[[test]]
+name = "property_tests"
+path = "tests/property_tests.rs"
+
+[[test]]
+name = "extended_arabic_errors"
+path = "tests/extended_arabic_errors.rs"
+
+[[test]]
+name = "jit_safety_systems"
+path = "tests/jit_safety_systems.rs"
+
+[[test]]
+name = "e2e_real_world"
+path = "tests/e2e_real_world.rs"
+
+[[test]]
+name = "arabic_fuzz_generator"
+path = "tests/arabic_fuzz_generator.rs"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # المعايير (Benchmarks)

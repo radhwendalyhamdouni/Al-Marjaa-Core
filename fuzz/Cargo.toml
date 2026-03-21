@@ -1,0 +1,60 @@
+[package]
+name = "almarjaa-fuzz"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+almarjaa = { path = ".." }
+libfuzzer-sys = "0.4"
+arbitrary = { version = "1.3", features = ["derive"] }
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fuzz Targets
+# ═══════════════════════════════════════════════════════════════════════════════
+# Each target focuses on a specific component:
+# - lexer: Tokenization robustness
+# - parser: Parsing correctness
+# - unicode: Unicode/Arabic handling
+# - interpreter: Runtime stability
+# - jit: JIT compiler correctness
+# ═══════════════════════════════════════════════════════════════════════════════
+
+[[bin]]
+name = "fuzz_lexer"
+path = "fuzz_targets/fuzz_lexer.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_parser"
+path = "fuzz_targets/fuzz_parser.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_unicode"
+path = "fuzz_targets/fuzz_unicode.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_interpreter"
+path = "fuzz_targets/fuzz_interpreter.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_jit"
+path = "fuzz_targets/fuzz_jit.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_arabic"
+path = "fuzz_targets/fuzz_arabic.rs"
+test = false
+doc = false
