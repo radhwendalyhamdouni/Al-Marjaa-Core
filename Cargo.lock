@@ -129,6 +129,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-ai"
 version = "3.4.0"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
 dependencies = [
  "chrono",
  "dirs",
@@ -143,6 +144,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-database"
 version = "3.4.0"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
 dependencies = [
  "chrono",
  "hex",
@@ -153,6 +155,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-gpu"
 version = "3.4.0"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
 dependencies = [
  "num_cpus",
  "rayon",
@@ -161,6 +164,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-industrial"
 version = "3.4.0"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
 dependencies = [
  "chrono",
  "num_cpus",
@@ -174,6 +178,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-network"
 version = "3.4.0"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
 dependencies = [
  "chrono",
  "rand 0.8.5",
@@ -185,6 +190,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-onnx"
 version = "3.4.0"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
 dependencies = [
  "chrono",
  "ndarray",

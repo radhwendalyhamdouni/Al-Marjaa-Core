@@ -87,25 +87,26 @@ target-lexicon = { version = "0.13", optional = true }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # مكتبات Al-Marjaa الخارجية (اختياري)
+# يتم تحميلها تلقائياً من GitHub عند تفعيل الـ feature flag
 # ═══════════════════════════════════════════════════════════════════════════════
 
 # مكتبة الذكاء الاصطناعي
-almarjaa-ai = { path = "../al-marjaa-libraries/libs/ai", optional = true }
+almarjaa-ai = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
 
 # مكتبة قواعد البيانات
-almarjaa-database = { path = "../al-marjaa-libraries/libs/database", optional = true }
+almarjaa-database = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
 
 # مكتبة الشبكات
-almarjaa-network = { path = "../al-marjaa-libraries/libs/network", optional = true }
+almarjaa-network = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
 
 # مكتبة ONNX
-almarjaa-onnx = { path = "../al-marjaa-libraries/libs/onnx", optional = true }
+almarjaa-onnx = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
 
 # مكتبة GPU
-almarjaa-gpu = { path = "../al-marjaa-libraries/libs/gpu", optional = true }
+almarjaa-gpu = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
 
 # مكتبة الأتمتة الصناعية
-almarjaa-industrial = { path = "../al-marjaa-libraries/libs/industrial", optional = true }
+almarjaa-industrial = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git", branch = "main", optional = true }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Feature Flags
