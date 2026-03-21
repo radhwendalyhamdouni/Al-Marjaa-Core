@@ -111,43 +111,31 @@ fn test_reserved_words_as_identifiers() {
 fn test_function_definition() {
     // تعريف دالة
     let input = "دالة سلام(اسم) { اطبع(\"مرحبا \" + اسم)؛ }";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let result = parser.parse();
+    let result = Parser::parse(input);
     assert!(result.is_ok());
 }
 
 #[test]
 fn test_if_statement() {
     // جملة شرطية
-    let input = "إذا (س > 10) { اطبع(\"كبير\")؛ }";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let result = parser.parse();
+    let input = "إذا س > 10 { اطبع(\"كبير\")؛ }";
+    let result = Parser::parse(input);
     assert!(result.is_ok());
 }
 
 #[test]
 fn test_while_loop() {
     // حلقة طالما
-    let input = "طالما (س < 100) { س = س + 1؛ }";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let result = parser.parse();
+    let input = "طالما س < 100 { س = س + 1؛ }";
+    let result = Parser::parse(input);
     assert!(result.is_ok());
 }
 
 #[test]
 fn test_for_loop() {
     // حلقة لكل
-    let input = "لكل (عنصر في القائمة) { اطبع(عنصر)؛ }";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let result = parser.parse();
+    let input = "لكل عنصر في القائمة { اطبع(عنصر)؛ }";
+    let result = Parser::parse(input);
     assert!(result.is_ok());
 }
 
@@ -155,10 +143,15 @@ fn test_for_loop() {
 fn test_class_definition() {
     // تعريف صنف
     let input = "صنف شخص { دالة تهيئة(هذا، الاسم) { هذا.الاسم = الاسم؛ } }";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let result = parser.parse();
+    let result = Parser::parse(input);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_range_loop() {
+    // حللة نطاق
+    let input = "لكل س في مدى(1، 10) { اطبع(س)؛ }";
+    let result = Parser::parse(input);
     assert!(result.is_ok());
 }
 
@@ -170,10 +163,7 @@ fn test_class_definition() {
 fn test_arithmetic_operations() {
     // العمليات الحسابية
     let input = "متغير ن = 10 + 5 * 2؛";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&ast);
     assert!(result.is_ok());
@@ -183,17 +173,14 @@ fn test_arithmetic_operations() {
 fn test_comparison_operations() {
     // عمليات المقارنة
     let inputs = vec![
-        "متغير أ = 10 == 10؛",  // صح
-        "متغير ب = 10 != 5؛",   // صح
-        "متغير ج = 10 < 20؛",   // صح
-        "متغير د = 20 > 10؛",   // صح
+        "متغير أ = 10 == 10؛",
+        "متغير ب = 10 != 5؛",
+        "متغير ج = 10 < 20؛",
+        "متغير د = 20 > 10؛",
     ];
 
     for input in inputs {
-        let mut lexer = Lexer::new(input);
-        let tokens = lexer.tokenize().unwrap();
-        let mut parser = Parser::new(tokens);
-        let ast = parser.parse().unwrap();
+        let ast = Parser::parse(input).unwrap();
         let mut interpreter = Interpreter::new();
         let result = interpreter.interpret(&ast);
         assert!(result.is_ok());
@@ -204,14 +191,11 @@ fn test_comparison_operations() {
 fn test_list_operations() {
     // عمليات القوائم
     let input = r#"
-        متغير قائمة = [1, 2, 3, 4, 5]؛
+        متغير قائمة = [1، 2، 3، 4، 5]؛
         اطبع(قائمة[0])؛
         اطبع(طول(قائمة))؛
     "#;
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&ast);
     assert!(result.is_ok());
@@ -221,13 +205,10 @@ fn test_list_operations() {
 fn test_dictionary_operations() {
     // عمليات القواميس
     let input = r#"
-        متغير شخص = {"الاسم": "أحمد", "العمر": 25}؛
+        متغير شخص = {"الاسم": "أحمد"، "العمر": 25}؛
         اطبع(شخص["الاسم"])؛
     "#;
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&ast);
     assert!(result.is_ok());
@@ -238,17 +219,14 @@ fn test_recursion() {
     // العودية
     let input = r#"
         دالة فيبوناتشي(ن) {
-            إذا (ن <= 1) {
+            إذا ن <= 1 {
                 أرجع ن؛
             }
             أرجع فيبوناتشي(ن - 1) + فيبوناتشي(ن - 2)؛
         }
         اطبع(فيبوناتشي(10))؛
     "#;
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&ast);
     assert!(result.is_ok());
@@ -262,10 +240,7 @@ fn test_recursion() {
 fn test_undefined_variable_error() {
     // استخدام متغير غير معرف
     let input = "اطبع(متغير_غير_معرف)؛";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&ast);
     assert!(result.is_err());
@@ -275,10 +250,7 @@ fn test_undefined_variable_error() {
 fn test_division_by_zero_handling() {
     // القسمة على صفر
     let input = "متغير ن = 10 / 0؛";
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     // يجب أن تتعامل مع القسمة على صفر بشكل آمن
     let _ = interpreter.interpret(&ast);
@@ -289,10 +261,7 @@ fn test_division_by_zero_handling() {
 fn test_type_mismatch_handling() {
     // عدم تطابق الأنواع
     let input = r#"متغير ن = "نص" + 10؛"#;
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let _ = interpreter.interpret(&ast);
     // يجب أن تتعامل مع عدم تطابق الأنواع
@@ -328,10 +297,7 @@ fn test_mixed_arabic_english() {
         متغير الاسم = "أحمد"؛
         اطبع(name + " - " + الاسم)؛
     "#;
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&ast);
     assert!(result.is_ok());
@@ -347,7 +313,7 @@ fn test_large_list_performance() {
     let mut input = String::from("متغير قائمة = [");
     for i in 0..1000 {
         if i > 0 {
-            input.push_str(", ");
+            input.push_str("، ");
         }
         input.push_str(&format!("{}", i));
     }
@@ -367,19 +333,193 @@ fn test_deep_recursion_limit() {
     // حد العمق للعودية
     let input = r#"
         دالة عميق(ن) {
-            إذا (ن <= 0) {
+            إذا ن <= 0 {
                 أرجع 0؛
             }
             أرجع عميق(ن - 1) + 1؛
         }
         اطبع(عميق(100))؛
     "#;
-    let mut lexer = Lexer::new(input);
-    let tokens = lexer.tokenize().unwrap();
-    let mut parser = Parser::new(tokens);
-    let ast = parser.parse().unwrap();
+    let ast = Parser::parse(input).unwrap();
     let mut interpreter = Interpreter::new();
     let result = interpreter.interpret(&ast);
     // يجب أن تعمل أو تعطي خطأ واضح
     assert!(result.is_ok() || result.is_err());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// اختبارات إضافية للأخطاء العربية
+// ═══════════════════════════════════════════════════════════════════════════════
+
+#[test]
+fn test_short_variable_keywords() {
+    // اختصارات الكلمات المفتاحية
+    let input = "م س = 10؛ ث ثابت = 5؛";
+    let mut lexer = Lexer::new(input);
+    let tokens = lexer.tokenize().unwrap();
+
+    assert!(matches!(tokens[0].token_type, TokenType::Let));
+    assert!(matches!(tokens[4].token_type, TokenType::Const));
+}
+
+#[test]
+fn test_boolean_values() {
+    // القيم المنطقية العربية
+    let input = "متغير أ = صح؛ متغير ب = خطأ؛";
+    let mut lexer = Lexer::new(input);
+    let tokens = lexer.tokenize().unwrap();
+
+    assert!(matches!(tokens[2].token_type, TokenType::True));
+    assert!(matches!(tokens[6].token_type, TokenType::False));
+}
+
+#[test]
+fn test_null_value() {
+    // القيمة الفارغة العربية
+    let input = "متغير فارغ = لا_شيء؛";
+    let mut lexer = Lexer::new(input);
+    let tokens = lexer.tokenize().unwrap();
+
+    assert!(matches!(tokens[2].token_type, TokenType::NullKeyword));
+}
+
+#[test]
+fn test_arithmetic_operators() {
+    // العمليات الحسابية
+    let input = "متغير ن = 10 + 5 - 3 * 2 / 4 % 2 ^ 3؛";
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_logical_operators() {
+    // العمليات المنطقية
+    let input = "متغير ن = صح و خطأ أو صح؛";
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_lambda_function() {
+    // الدوال الصغيرة (Lambda)
+    let input = "متغير ضعف = دالة(س) => س * 2؛";
+    let ast = Parser::parse(input);
+    // قد يكون مدعوماً أو لا
+    println!("Lambda parsing: {:?}", ast.is_ok());
+}
+
+#[test]
+fn test_array_indexing() {
+    // فهرسة المصفوفات
+    let input = r#"
+        متغير قائمة = [10، 20، 30، 40، 50]؛
+        متغير أول = قائمة[0]؛
+        متغير أخير = قائمة[4]؛
+    "#;
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_object_access() {
+    // الوصول لخصائص الكائن
+    let input = r#"
+        متغير شخص = {"اسم": "أحمد"، "عمر": 25}؛
+        متغير اسم = شخص["اسم"]؛
+    "#;
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_method_call() {
+    // استدعاء الدوال
+    let input = r#"
+        متغير قائمة = [1، 2، 3]؛
+        قائمة.أضف(4)؛
+    "#;
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_chained_method_calls() {
+    // استدعاءات متسلسلة
+    let input = r#"
+        متغير قائمة = [1، 2، 3]؛
+        قائمة.أضف(4).أضف(5)؛
+    "#;
+    let ast = Parser::parse(input);
+    // قد يكون مدعوماً أو لا
+    println!("Chained method calls: {:?}", ast.is_ok());
+}
+
+#[test]
+fn test_nested_loops() {
+    // حلقات متداخلة
+    let input = r#"
+        لكل س في مدى(1، 4) {
+            لكل ص في مدى(1، 4) {
+                اطبع(س * ص)؛
+            }
+        }
+    "#;
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_nested_conditions() {
+    // شروط متداخلة
+    let input = r#"
+        متغير س = 10؛
+        إذا س > 5 {
+            إذا س > 15 {
+                اطبع("كبير جداً")؛
+            }
+            وإلا {
+                اطبع("متوسط")؛
+            }
+        }
+    "#;
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_else_if_branches() {
+    // فروع وإذا
+    let input = r#"
+        متغير درجة = 85؛
+        إذا درجة >= 90 {
+            اطبع("ممتاز")؛
+        }
+        وإذا درجة >= 80 {
+            اطبع("جيد جداً")؛
+        }
+        وإذا درجة >= 70 {
+            اطبع("جيد")؛
+        }
+        وإلا {
+            اطبع("مقبول")؛
+        }
+    "#;
+    let ast = Parser::parse(input).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
 }

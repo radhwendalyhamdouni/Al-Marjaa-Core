@@ -984,7 +984,7 @@ mod tests {
                 اطبع("جاهز")؛
             }
 
-            حالة المتجر = {"عداد": 1}؛
+            حالة_التطبيق = {"عداد": 1}؛
             ثيم المصنع = {"اتجاه": "RTL"}؛
             موجه المسارات = {"/": "صفحة_الرئيسية"}؛
         "#;
@@ -993,7 +993,7 @@ mod tests {
         let runtime_program = UiRuntimeProgram::from_ast(&program).expect("يجب بناء runtime");
 
         assert_eq!(runtime_program.theme.direction, TextDirection::Rtl);
-        assert_eq!(runtime_program.state["المتجر"]["عداد"], "1");
+        assert_eq!(runtime_program.state["حالة_التطبيق"]["عداد"], "1");
 
         let html = runtime_program
             .render_route_html("/")

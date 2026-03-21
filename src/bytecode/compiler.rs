@@ -613,7 +613,7 @@ mod tests {
         let result = Compiler::compile_source(
             r#"
             متغير س = 10؛
-            متجر ص = 20؛
+            متغير ص = 20؛
             اطبع(س + ص)؛
         "#,
         );

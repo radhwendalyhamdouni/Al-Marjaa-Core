@@ -1,0 +1,15 @@
+/home/z/my-project/Al-Marjaa-Core/target/release/deps/region-788bcc5b7e71a4c3.d: /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/lib.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/alloc.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/error.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/lock.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/mod.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/unix.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/linux.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/page.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/protect.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/query.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/util.rs
+
+/home/z/my-project/Al-Marjaa-Core/target/release/deps/libregion-788bcc5b7e71a4c3.rmeta: /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/lib.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/alloc.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/error.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/lock.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/mod.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/unix.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/linux.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/page.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/protect.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/query.rs /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/util.rs
+
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/lib.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/alloc.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/error.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/lock.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/mod.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/unix.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/os/linux.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/page.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/protect.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/query.rs:
+/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/region-3.0.2/src/util.rs:
