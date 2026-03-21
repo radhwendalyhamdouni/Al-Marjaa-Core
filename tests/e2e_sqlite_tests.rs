@@ -12,10 +12,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 use almarjaa::interpreter::Interpreter;
-use almarjaa::parser::Parser;
-use almarjaa::lexer::Lexer;
 use tempfile::NamedTempFile;
-use std::path::PathBuf;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DATABASE SETUP AND CONNECTION TESTS

@@ -12,8 +12,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 use almarjaa::interpreter::Interpreter;
-use almarjaa::parser::Parser;
-use almarjaa::lexer::Lexer;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BASIC IMPORT TESTS

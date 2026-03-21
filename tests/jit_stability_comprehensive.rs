@@ -9,12 +9,18 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 use almarjaa::bytecode::{Compiler, CompleteV2JitCompiler, VM, ExecutionGuard, ExecutionLimits, BailoutReason};
+use almarjaa::bytecode::V2JitStats;
 use std::rc::Rc;
 use std::cell::RefCell;
 use almarjaa::interpreter::value::Environment;
 use std::time::{Duration, Instant};
 use std::sync::{Arc, Mutex, Barrier, atomic::{AtomicUsize, AtomicU64, Ordering}};
 use std::thread;
+
+// Helper to get JIT stats as owned
+fn get_stats(jit: &CompleteV2JitCompiler) -> V2JitStats {
+    jit.stats().clone()
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 1: MEMORY STRESS TESTS - 1M+ OPERATIONS
@@ -44,7 +50,7 @@ fn test_jit_memory_stress_1m_arithmetic() {
     
     assert!(result.is_ok(), "JIT يجب أن ينجح مع 1M عملية حسابية: {:?}", result.err());
     
-    let stats = jit.stats();
+    let stats = get_stats(&jit);
     println!("✅ test_jit_memory_stress_1m_arithmetic:");
     println!("   الوقت: {:?}", elapsed);
     println!("   التنفيذات: {}", stats.total_executions);
