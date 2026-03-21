@@ -1,0 +1,162 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# GitHub Actions - مكتبة النواة الأساسية
+# ═══════════════════════════════════════════════════════════════════════════════
+# هذا الملف يجب وضعه في: .github/workflows/main.yml
+# في مستودع: https://github.com/radhwendalyhamdouni/Al-Marjaa-Core
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: Al-Marjaa Core CI/CD
+
+on:
+  # عند الدفع للمستودع
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - '.github/workflows/**'
+  
+  # عند فتح Pull Request
+  pull_request:
+    branches: [main]
+  
+  # عند استقبال حدث من مستودع خارجي (مكتبة جديدة)
+  repository_dispatch:
+    types: [new-library-added, library-updated]
+  
+  # تشغيل يدوي
+  workflow_dispatch:
+    inputs:
+      test_features:
+        description: 'اختبار المكتبات الخارجية'
+        required: false
+        default: 'false'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # بناء واختبار النواة الأساسية
+  # ═══════════════════════════════════════════════════════════════════════════
+  build-core:
+    name: Build Core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Check formatting
+        run: cargo fmt --check
+      
+      - name: Clippy
+        run: cargo clippy -- -D warnings
+      
+      - name: Build
+        run: cargo build --release
+      
+      - name: Run tests
+        run: cargo test --release
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # اختبار مع مكتبة خارجية
+  # ═══════════════════════════════════════════════════════════════════════════
+  test-with-library:
+    name: Test with ${{ matrix.library }}
+    needs: build-core
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'repository_dispatch' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        library: [ai, industrial, database, network, onnx, gpu]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Build with library
+        run: cargo build --features ${{ matrix.library }}
+        continue-on-error: true
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # إضافة مكتبة جديدة عند استقبال حدث
+  # ═══════════════════════════════════════════════════════════════════════════
+  add-new-library:
+    name: Add New Library
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'repository_dispatch' && github.event.action == 'new-library-added' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Extract library info
+        id: lib-info
+        run: |
+          echo "LIB_NAME=${{ github.event.client_payload.library_name }}" >> $GITHUB_OUTPUT
+          echo "LIB_REPO=${{ github.event.client_payload.library_repo }}" >> $GITHUB_OUTPUT
+          echo "LIB_DESCRIPTION=${{ github.event.client_payload.library_description }}" >> $GITHUB_OUTPUT
+      
+      - name: Update Cargo.toml
+        run: |
+          LIB_NAME="${{ steps.lib-info.outputs.LIB_NAME }}"
+          LIB_REPO="${{ steps.lib-info.outputs.LIB_REPO }}"
+          LIB_LOWER=$(echo "$LIB_NAME" | tr '[:upper:]' '[:lower:]')
+          
+          # إضافة التبعية
+          sed -i "/# مكتبة الأتمتة الصناعية/a # مكتبة ${LIB_NAME}\n${LIB_LOWER} = { git = \"${LIB_REPO}\", branch = \"main\", optional = true }\n" Cargo.toml
+          
+          # إضافة feature
+          sed -i "/# مكتبة الأتمتة الصناعية/a # مكتبة ${LIB_NAME}\n${LIB_LOWER} = [\"${LIB_LOWER}\"]\n" Cargo.toml
+          
+          # تحديث all-libs
+          sed -i "s/all-libs = \\[/all-libs = [\"${LIB_LOWER}\", /" Cargo.toml
+      
+      - name: Commit and push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Cargo.toml
+          git commit -m "feat: add ${{ steps.lib-info.outputs.LIB_NAME }} library"
+          git push
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # نشر الإصدار الجديد
+  # ═══════════════════════════════════════════════════════════════════════════
+  publish:
+    name: Publish to crates.io
+    needs: build-core
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Publish
+        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
+        continue-on-error: true

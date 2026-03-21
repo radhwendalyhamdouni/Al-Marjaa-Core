@@ -1,0 +1,303 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# GitHub Actions - إنشاء مكتبة جديدة
+# ═══════════════════════════════════════════════════════════════════════════════
+# هذا الملف يوضع في: .github/workflows/create-library.yml
+# في مستودع: Al-Marjaa-Core
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: Create New Library
+
+on:
+  # تشغيل يدوي فقط
+  workflow_dispatch:
+    inputs:
+      library_name:
+        description: 'اسم المكتبة (مثال: Security)'
+        required: true
+        type: string
+      library_description:
+        description: 'وصف المكتبة بالعربية'
+        required: true
+        type: string
+      library_features:
+        description: 'الميزات (مفصولة بفاصلة)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  GITHUB_USER: radhwendalyhamdouni
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # إنشاء المستودع والملفات
+  # ═══════════════════════════════════════════════════════════════════════════
+  create-library:
+    name: Create ${{ github.event.inputs.library_name }} Library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare variables
+        id: vars
+        run: |
+          LIB_NAME="${{ github.event.inputs.library_name }}"
+          LIB_LOWER=$(echo "$LIB_NAME" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME="Al-Marjaa-${LIB_NAME}"
+          PACKAGE_NAME="almarjaa-${LIB_LOWER}"
+          
+          echo "lib_name=${LIB_NAME}" >> $GITHUB_OUTPUT
+          echo "lib_lower=${LIB_LOWER}" >> $GITHUB_OUTPUT
+          echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+          echo "package_name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+      
+      - name: Create repository
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const repoName = '${{ steps.vars.outputs.repo_name }}';
+            const description = '${{ github.event.inputs.library_description }}';
+            
+            try {
+              await github.rest.repos.createForAuthenticatedUser({
+                name: repoName,
+                description: description,
+                private: false,
+                auto_init: false
+              });
+              console.log(`✅ Created repository: ${repoName}`);
+            } catch (error) {
+              if (error.status === 422) {
+                console.log(`⚠️ Repository already exists: ${repoName}`);
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Create library files
+        run: |
+          mkdir -p src
+          
+          # إنشاء Cargo.toml
+          cat > Cargo.toml << 'CARGO_EOF'
+          [package]
+          name = "${{ steps.vars.outputs.package_name }}"
+          version = "3.4.0"
+          edition = "2021"
+          authors = ["رضوان دالي حمدوني <almarjaa.project@hotmail.com>"]
+          description = "${{ github.event.inputs.library_description }}"
+          license = "All Rights Reserved"
+          repository = "https://github.com/${{ env.GITHUB_USER }}/${{ steps.vars.outputs.repo_name }}"
+
+          [lib]
+          crate-type = ["cdylib", "rlib"]
+
+          [dependencies]
+          serde = { version = "1.0", features = ["derive"] }
+          serde_json = "1.0"
+          chrono = { version = "0.4", features = ["serde"] }
+
+          [features]
+          default = []
+          full = []
+          CARGO_EOF
+          
+          # إنشاء lib.rs
+          cat > src/lib.rs << 'LIB_EOF'
+          // ═══════════════════════════════════════════════════════════════════════════════
+          // ${{ steps.vars.outputs.lib_name }} - ${{ github.event.inputs.library_description }}
+          // ═══════════════════════════════════════════════════════════════════════════════
+
+          //! # ${{ steps.vars.outputs.lib_name }}
+          //! 
+          //! ${{ github.event.inputs.library_description }}
+          //! 
+
+          use serde::{Serialize, Deserialize};
+
+          /// معلومات الوحدة
+          pub const MODULE_VERSION: &str = "3.4.0";
+          pub const MODULE_NAME: &str = "${{ steps.vars.outputs.lib_name }}";
+
+          /// نتيجة العملية
+          #[derive(Debug, Clone, Serialize, Deserialize)]
+          pub struct ${{ steps.vars.outputs.lib_name }}Result<T> {
+              pub success: bool,
+              pub value: Option<T>,
+              pub error: Option<String>,
+          }
+
+          impl<T> ${{ steps.vars.outputs.lib_name }}Result<T> {
+              pub fn ok(value: T) -> Self {
+                  Self {
+                      success: true,
+                      value: Some(value),
+                      error: None,
+                  }
+              }
+              
+              pub fn err(message: impl Into<String>) -> Self {
+                  Self {
+                      success: false,
+                      value: None,
+                      error: Some(message.into()),
+                  }
+              }
+          }
+
+          /// الحصول على معلومات الوحدة
+          pub fn module_info() -> String {
+              format!(
+                  r#"
+          ╔═══════════════════════════════════════════════════════════════╗
+          │            ${{ steps.vars.outputs.lib_name }} - Al-Marjaa             │
+          ╠═══════════════════════════════════════════════════════════════╣
+          │  الإصدار: {}                                              │
+          ╚═══════════════════════════════════════════════════════════════╝
+          "#,
+                  MODULE_VERSION
+              )
+          }
+
+          #[cfg(test)]
+          mod tests {
+              use super::*;
+              
+              #[test]
+              fn test_module_info() {
+                  let info = module_info();
+                  assert!(info.contains("${{ steps.vars.outputs.lib_name }}"));
+              }
+          }
+          LIB_EOF
+          
+          # إنشاء README.md
+          cat > README.md << 'README_EOF'
+          <div align="center">
+
+          # مكتبة ${{ steps.vars.outputs.lib_name }} للغة المرجع
+          ### Al-Marjaa ${{ steps.vars.outputs.lib_name }} Library
+
+          [![Version](https://img.shields.io/badge/version-3.4.0-blue.svg)](https://github.com/${{ env.GITHUB_USER }}/${{ steps.vars.outputs.repo_name }})
+
+          **المخترع والمطور: رضوان دالي حمدوني**
+
+          </div>
+
+          ---
+
+          ## 🎯 نظرة عامة
+
+          ${{ github.event.inputs.library_description }}
+
+          ---
+
+          ## 📦 التثبيت
+
+          ```toml
+          [dependencies]
+          ${{ steps.vars.outputs.package_name }} = { git = "https://github.com/${{ env.GITHUB_USER }}/${{ steps.vars.outputs.repo_name }}" }
+          ```
+
+          ---
+
+          **صُنع بـ ❤️ للعالم العربي**
+          README_EOF
+          
+          # إنشاء workflow
+          mkdir -p .github/workflows
+          cp ${{ github.workspace }}/.github/workflows/library-template.yml .github/workflows/library.yml || true
+
+      - name: Initialize git and push
+        run: |
+          git init
+          git branch -m main
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "🎉 Initial commit: Al-Marjaa ${{ steps.vars.outputs.lib_name }} Library v3.4.0
+
+          - ${{ github.event.inputs.library_description }}
+          - Full Rust library setup
+          - GitHub Actions CI/CD"
+          
+          git remote add origin "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ env.GITHUB_USER }}/${{ steps.vars.outputs.repo_name }}.git"
+          git push -u origin main
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # تحديث النواة الأساسية
+  # ═══════════════════════════════════════════════════════════════════════════
+  update-core:
+    name: Update Core Repository
+    needs: create-library
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Core
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GITHUB_USER }}/Al-Marjaa-Core
+          token: ${{ secrets.CORE_REPO_TOKEN }}
+      
+      - name: Prepare variables
+        id: vars
+        run: |
+          LIB_NAME="${{ github.event.inputs.library_name }}"
+          LIB_LOWER=$(echo "$LIB_NAME" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME="Al-Marjaa-${LIB_NAME}"
+          
+          echo "lib_name=${LIB_NAME}" >> $GITHUB_OUTPUT
+          echo "lib_lower=${LIB_LOWER}" >> $GITHUB_OUTPUT
+          echo "repo_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+      
+      - name: Update Cargo.toml
+        run: |
+          LIB_NAME="${{ steps.vars.outputs.lib_name }}"
+          LIB_LOWER="${{ steps.vars.outputs.lib_lower }}"
+          REPO_URL="https://github.com/${{ env.GITHUB_USER }}/${{ steps.vars.outputs.repo_name }}"
+          
+          # إضافة التبعية في القسم المناسب
+          sed -i "/# مكتبة الأتمتة الصناعية/a # مكتبة ${LIB_NAME}\n${LIB_LOWER} = { git = \"${REPO_URL}\", branch = \"main\", optional = true }\n" Cargo.toml
+          
+          # إضافة feature
+          sed -i "/# مكتبة الأتمتة الصناعية (feature)/a # مكتبة ${LIB_NAME}\n${LIB_LOWER} = [\"${LIB_LOWER}\"]\n" Cargo.toml
+          
+          # تحديث all-libs
+          sed -i "s/all-libs = \\[/all-libs = [\"${LIB_LOWER}\", /" Cargo.toml
+      
+      - name: Commit and push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add Cargo.toml
+          git commit -m "feat: add ${{ steps.vars.outputs.lib_name }} library
+
+          - New library: ${{ github.event.inputs.library_description }}
+          - Repository: ${{ env.GITHUB_USER }}/${{ steps.vars.outputs.repo_name }}"
+          git push
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ملخص النتيجة
+  # ═══════════════════════════════════════════════════════════════════════════
+  summary:
+    name: Summary
+    needs: [create-library, update-core]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print summary
+        run: |
+          echo "## ✅ تم إنشاء المكتبة بنجاح!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 معلومات المكتبة:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| الخاصية | القيمة |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| الاسم | ${{ github.event.inputs.library_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| الوصف | ${{ github.event.inputs.library_description }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| المستودع | [Al-Marjaa-${{ github.event.inputs.library_name }}](https://github.com/${{ env.GITHUB_USER }}/Al-Marjaa-${{ github.event.inputs.library_name }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 الاستخدام:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`toml" >> $GITHUB_STEP_SUMMARY
+          echo "[dependencies]" >> $GITHUB_STEP_SUMMARY
+          LIB_LOWER=$(echo "${{ github.event.inputs.library_name }}" | tr '[:upper:]' '[:lower:]')
+          echo "almarjaa-${LIB_LOWER} = { git = \"https://github.com/${{ env.GITHUB_USER }}/Al-Marjaa-${{ github.event.inputs.library_name }}\" }" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
