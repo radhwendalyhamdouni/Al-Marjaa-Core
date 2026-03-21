@@ -13,7 +13,7 @@
 // - Arabic number formats
 // ═══════════════════════════════════════════════════════════════════════════════
 
-use almarjaa::lexer::{Lexer, TokenType};
+use almarjaa::lexer::Lexer;
 use almarjaa::parser::Parser;
 use almarjaa::interpreter::Interpreter;
 

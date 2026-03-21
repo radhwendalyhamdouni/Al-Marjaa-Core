@@ -12,7 +12,7 @@
 use proptest::prelude::*;
 use proptest::collection::{vec, hash_map};
 
-use almarjaa::lexer::{Lexer, TokenType};
+use almarjaa::lexer::Lexer;
 use almarjaa::parser::Parser;
 use almarjaa::interpreter::Interpreter;
 use almarjaa::bytecode::{Compiler, CompleteV2JitCompiler};
@@ -405,14 +405,12 @@ proptest! {
 }
 
 /// Property: Empty string
-proptest! {
-    #[test]
-    fn test_string_empty() {
-        let input = "متغير نص = \"\"؛";
-        let mut interp = Interpreter::new();
-        let result = interp.run(input);
-        assert!(result.is_ok());
-    }
+#[test]
+fn test_string_empty() {
+    let input = "متغير نص = \"\"؛";
+    let mut interp = Interpreter::new();
+    let result = interp.run(input);
+    assert!(result.is_ok());
 }
 
 /// Property: String length function
@@ -443,14 +441,12 @@ proptest! {
 }
 
 /// Property: Empty list
-proptest! {
-    #[test]
-    fn test_list_empty() {
-        let input = "متغير قائمة = []؛";
-        let mut interp = Interpreter::new();
-        let result = interp.run(input);
-        assert!(result.is_ok());
-    }
+#[test]
+fn test_list_empty() {
+    let input = "متغير قائمة = []؛";
+    let mut interp = Interpreter::new();
+    let result = interp.run(input);
+    assert!(result.is_ok());
 }
 
 /// Property: Nested lists
@@ -491,14 +487,12 @@ proptest! {
 }
 
 /// Property: Empty dictionary
-proptest! {
-    #[test]
-    fn test_dict_empty() {
-        let input = "متغير قاموس = {}؛";
-        let mut interp = Interpreter::new();
-        let result = interp.run(input);
-        assert!(result.is_ok());
-    }
+#[test]
+fn test_dict_empty() {
+    let input = "متغير قاموس = {}؛";
+    let mut interp = Interpreter::new();
+    let result = interp.run(input);
+    assert!(result.is_ok());
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
