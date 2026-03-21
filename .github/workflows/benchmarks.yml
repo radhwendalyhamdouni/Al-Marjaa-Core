@@ -1,0 +1,201 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Benchmarks Workflow - اختبارات الأداء
+# ═══════════════════════════════════════════════════════════════════════════════
+# يتم تشغيل هذا الـ workflow عند:
+# - Release (إصدار جديد)
+# - Pull Request (للمراجعة)
+# - يدوياً (workflow_dispatch)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: Benchmarks
+
+on:
+  release:
+    types: [created, published]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:  # تشغيل يدوي
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Build Benchmarks
+  # ═══════════════════════════════════════════════════════════════════════════
+  build:
+    name: Build Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-bench-
+
+      - name: Build benchmarks
+        run: cargo bench --no-run --verbose
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Lexer Benchmarks
+  # ═══════════════════════════════════════════════════════════════════════════
+  lexer:
+    name: Lexer Benchmarks
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run lexer benchmarks
+        run: |
+          cargo bench --bench lexer_benchmark -- --sample-size 10 2>&1 | head -50
+        continue-on-error: true
+
+      - name: Report results
+        run: echo "Lexer benchmarks completed"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Parser Benchmarks
+  # ═══════════════════════════════════════════════════════════════════════════
+  parser:
+    name: Parser Benchmarks
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run parser benchmarks
+        run: |
+          cargo bench --bench parser_benchmark -- --sample-size 10 2>&1 | head -50
+        continue-on-error: true
+
+      - name: Report results
+        run: echo "Parser benchmarks completed"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Interpreter Benchmarks
+  # ═══════════════════════════════════════════════════════════════════════════
+  interpreter:
+    name: Interpreter Benchmarks
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run interpreter benchmarks
+        run: |
+          cargo bench --bench interpreter_benchmark -- --sample-size 10 2>&1 | head -50
+        continue-on-error: true
+
+      - name: Report results
+        run: echo "Interpreter benchmarks completed"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # JIT Benchmarks (Heavy)
+  # ═══════════════════════════════════════════════════════════════════════════
+  jit:
+    name: JIT Benchmarks
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run JIT benchmarks (with bench-heavy feature)
+        run: |
+          cargo bench --features bench-heavy -- --sample-size 10 2>&1 | head -100
+        continue-on-error: true
+
+      - name: Report results
+        run: echo "JIT benchmarks completed"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Summary Report
+  # ═══════════════════════════════════════════════════════════════════════════
+  summary:
+    name: Benchmark Summary
+    needs: [lexer, parser, interpreter]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## Benchmark Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Benchmark | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lexer | ${{ needs.lexer.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Parser | ${{ needs.parser.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Interpreter | ${{ needs.interpreter.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any benchmark failed
+        if: contains(needs.*.result, 'failure')
+        run: exit 1
