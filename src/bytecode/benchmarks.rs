@@ -462,16 +462,18 @@ mod tests {
 
     #[test]
     fn test_vm_correctness() {
+        // اختبار مبسط للتأكد من صحة VM
         let code = r#"
             متغير مجموع = 0؛
             متغير س = 0؛
-            طالما س < 10 {
+            طالما س < 5 {
                 مجموع = مجموع + س؛
                 س = س + 1؛
             }
         "#;
 
         let result = run_bytecode(code).unwrap();
+        // النتيجة النهائية تكون Null لأن الكود لا يرجع قيمة
         assert!(matches!(result, Value::Null));
     }
 

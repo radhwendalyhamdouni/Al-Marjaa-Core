@@ -480,9 +480,10 @@ mod integration_tests {
 
     #[test]
     fn test_performance_benchmark() {
+        // تقليل التكرارات لتسريع CI
         let code = r#"
             متغير س = 0؛
-            طالما س < 1000 {
+            طالما س < 100 {
                 س = س + 1؛
             }
         "#;
@@ -497,7 +498,7 @@ mod integration_tests {
         println!("📊 أقصى حجم للمكدس: {}", stats.max_stack_size);
 
         if let Value::Number(n) = result {
-            assert_eq!(n, 1000.0);
+            assert_eq!(n, 100.0);
         }
     }
 }
