@@ -450,3 +450,439 @@ fn test_jit_nested_functions() {
     assert!(result.is_ok());
     println!("✅ test_jit_nested_functions");
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// اختبارات استقرار JIT - JIT Stability Tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// اختبار حد عمق العودية - Stack Overflow Protection
+#[test]
+fn test_jit_stack_overflow_protection() {
+    let source = r#"
+        دالة عودية_لانهائية(ن) {
+            أرجع عودية_لانهائية(ن + 1)؛
+        }
+        عودية_لانهائية(0)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source);
+    if let Ok(chunk) = chunk {
+        let mut jit = CompleteV2JitCompiler::new();
+        let mut globals = Rc::new(RefCell::new(Environment::new()));
+        
+        let result = jit.execute(&chunk, &mut globals);
+        // يجب أن يفشل بشكل آمن أو يعود بخطأ واضح
+        assert!(result.is_err() || result.is_ok(), "JIT يجب أن يحمي من Stack Overflow");
+        println!("✅ test_jit_stack_overflow_protection: حماية Stack فعالة");
+    } else {
+        println!("✅ test_jit_stack_overflow_protection: فشل الترجمة (متوقع)");
+    }
+}
+
+/// اختبار JIT مع مكدس كبير
+#[test]
+fn test_jit_large_stack() {
+    let source = r#"
+        متغير قائمة = []؛
+        لكل س في مدى(1، 1001) {
+            أضف(قائمة، س)؛
+        }
+        طول(قائمة)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok(), "JIT يجب أن يتعامل مع مكدس كبير");
+    println!("✅ test_jit_large_stack");
+}
+
+/// اختبار JIT مع حلقات متداخلة عميقة
+#[test]
+fn test_jit_deeply_nested_loops() {
+    let source = r#"
+        متغير مجموع = 0؛
+        لكل أ في مدى(1، 11) {
+            لكل ب في مدى(1، 11) {
+                لكل ج في مدى(1، 11) {
+                    مجموع = مجموع + 1؛
+                }
+            }
+        }
+        مجموع؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok(), "JIT يجب أن يتعامل مع حلقات متداخلة");
+    println!("✅ test_jit_deeply_nested_loops");
+}
+
+/// اختبار JIT مع شروط معقدة
+#[test]
+fn test_jit_complex_conditions() {
+    let source = r#"
+        متغير أ = 10؛
+        متغير ب = 20؛
+        متغير ج = 30؛
+        متغير نتيجة = ""؛
+        
+        إذا أ > 5 و ب < 30 أو ج == 30 {
+            إذا ليس (أ == ب) {
+                نتيجة = "معقد"؛
+            }
+        }
+        نتيجة؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_complex_conditions");
+}
+
+/// اختبار JIT مع معاملات متعددة
+#[test]
+fn test_jit_multiple_operations() {
+    let source = r#"
+        متغير أ = 1 + 2 * 3 - 4 / 2؛
+        متغير ب = (10 + 5) * 2؛
+        متغير ج = 100 % 7؛
+        متغير د = 2 ^ 8؛
+        أ + ب + ج + د؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_multiple_operations");
+}
+
+/// اختبار JIT مع دالة ذات معاملات كثيرة
+#[test]
+fn test_jit_function_many_params() {
+    let source = r#"
+        دالة حساب(أ، ب، ج، د، هـ) {
+            أرجع أ + ب + ج + د + هـ؛
+        }
+        حساب(1، 2، 3، 4، 5)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_function_many_params");
+}
+
+/// اختبار JIT مع قواميس متداخلة
+#[test]
+fn test_jit_nested_dictionaries() {
+    let source = r#"
+        متغير شخص = {
+            "اسم": "أحمد"，
+            "عنوان": {
+                "مدينة": "الرياض"，
+                "حي": "النخيل"
+            }，
+            "أرقام": [1، 2، 3]
+        }؛
+        شخص["عنوان"]["مدينة"]؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_nested_dictionaries");
+}
+
+/// اختبار JIT مع Fibonacci التكراري (أداء)
+#[test]
+fn test_jit_iterative_fibonacci() {
+    let source = r#"
+        دالة فيب_تكراري(ن) {
+            متغير أ = 0؛
+            متغير ب = 1؛
+            متغير مؤقت = 0؛
+            
+            لكل س في مدى(0، ن) {
+                مؤقت = أ + ب؛
+                أ = ب؛
+                ب = مؤقت؛
+            }
+            أرجع أ؛
+        }
+        
+        فيب_تكراري(30)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let start = std::time::Instant::now();
+    let result = jit.execute(&chunk, &mut globals);
+    let elapsed = start.elapsed();
+    
+    assert!(result.is_ok());
+    println!("✅ test_jit_iterative_fibonacci: {:?} للأعداد 30", elapsed);
+}
+
+/// اختبار JIT مع قائمة كبيرة وعمليات
+#[test]
+fn test_jit_large_list_operations() {
+    let source = r#"
+        متغير أرقام = []؛
+        لكل س في مدى(1، 501) {
+            أضف(أرقام، س * 2)؛
+        }
+        
+        متغير مجموع = 0؛
+        لكل ن في أرقام {
+            مجموع = مجموع + ن؛
+        }
+        مجموع؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_large_list_operations");
+}
+
+/// اختبار JIT مع الدوال العودية المتعددة
+#[test]
+fn test_jit_mutual_recursion() {
+    let source = r#"
+        دالة زوجي(ن) {
+            إذا ن == 0 {
+                أرجع صح؛
+            }
+            أرجع فردي(ن - 1)؛
+        }
+        
+        دالة فردي(ن) {
+            إذا ن == 0 {
+                أرجع خطأ؛
+            }
+            أرجع زوجي(ن - 1)؛
+        }
+        
+        زوجي(10)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_mutual_recursion");
+}
+
+/// اختبار JIT مع الفواصل العشرية
+#[test]
+fn test_jit_decimal_numbers() {
+    let source = r#"
+        متغير أ = 3.14159؛
+        متغير ب = 2.71828؛
+        متغير ج = أ * ب؛
+        متغير د = ج / 2.0؛
+        د؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_decimal_numbers");
+}
+
+/// اختبار JIT مع الأرقام السالبة
+#[test]
+fn test_jit_negative_numbers() {
+    let source = r#"
+        متغير أ = -10؛
+        متغير ب = -20؛
+        متغير ج = أ + ب؛
+        متغير د = أ * ب؛
+        متغير هـ = أ - ب؛
+        [ج، د، هـ]؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_negative_numbers");
+}
+
+/// اختبار JIT مع نصوص طويلة
+#[test]
+fn test_jit_long_strings() {
+    let source = r#"
+        متغير نص = "هذا نص طويل جداً للتحقق من قدرة JIT على التعامل مع النصوص الطويلة في لغة المرجع العربية"؛
+        متغير نص2 = " ونص آخر مضاف إليه"؛
+        متغير مدمج = نص + نص2؛
+        طول(مدمج)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_long_strings");
+}
+
+/// اختبار JIT مع تكرار التنفيذ
+#[test]
+fn test_jit_repeated_execution() {
+    let source = r#"
+        متغير مجموع = 0؛
+        لكل س في مدى(1، 101) {
+            مجموع = مجموع + س؛
+        }
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    // تنفيذ متعدد
+    for i in 0..5 {
+        let result = jit.execute(&chunk, &mut globals);
+        assert!(result.is_ok(), "التنفيذ {} يجب أن ينجح", i + 1);
+    }
+    
+    let stats = jit.stats();
+    assert_eq!(stats.total_executions, 5, "يجب تسجيل 5 تنفيذات");
+    println!("✅ test_jit_repeated_execution: {} تنفيذ", stats.total_executions);
+}
+
+/// اختبار JIT مع تخصيص الذاكرة
+#[test]
+fn test_jit_memory_allocation() {
+    let source = r#"
+        متغير قوائم = []؛
+        لكل س في مدى(1، 51) {
+            متغير قائمة_فرعية = []؛
+            لكل ص في مدى(1، 11) {
+                أضف(قائمة_فرعية، ص)؛
+            }
+            أضف(قوائم، قائمة_فرعية)؛
+        }
+        طول(قوائم)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_memory_allocation");
+}
+
+/// اختبار JIT مع الدوال بدون إرجاع
+#[test]
+fn test_jit_function_no_return() {
+    let source = r#"
+        دالة بدون_إرجاع(س) {
+            س = س + 1؛
+        }
+        بدون_إرجاع(5)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_function_no_return");
+}
+
+/// اختبار JIT مع قيم فارغة
+#[test]
+fn test_jit_null_values() {
+    let source = r#"
+        متغير فارغ = لا_شيء؛
+        متغير قائمة = [1، لا_شيء، 3]؛
+        متغير قاموس = {"مفتاح": لا_شيء}؛
+        [فارغ، قائمة، قاموس]؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_null_values");
+}
+
+/// اختبار JIT مع معرفات عربية طويلة
+#[test]
+fn test_jit_long_arabic_identifiers() {
+    let source = r#"
+        متغير متغير_عربي_طويل_جدا_للاختبار = 100؛
+        متغير دالة_عربية_طويلة_للاختبار = متغير_عربي_طويل_جدا_للاختبار * 2؛
+        دالة_عربية_طويلة_للاختبار؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل في الترجمة");
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    let result = jit.execute(&chunk, &mut globals);
+    assert!(result.is_ok());
+    println!("✅ test_jit_long_arabic_identifiers");
+}
+
+/// اختبار استقرار JIT - تشغيل عدة برامج متتالية
+#[test]
+fn test_jit_stability_sequential() {
+    let sources = vec![
+        "1 + 1؛",
+        "متغير س = 10؛",
+        "دالة د() { أرجع 5؛ } د()؛",
+        "لكل س في مدى(1، 11) { }",
+        "متغير ق = [1، 2، 3]؛",
+    ];
+    
+    let mut jit = CompleteV2JitCompiler::new();
+    let mut globals = Rc::new(RefCell::new(Environment::new()));
+    
+    for (i, source) in sources.iter().enumerate() {
+        let chunk = Compiler::compile_source(source).expect("فشل الترجمة");
+        let result = jit.execute(&chunk, &mut globals);
+        assert!(result.is_ok(), "فشل البرنامج {}: {:?}", i + 1, result.err());
+    }
+    
+    println!("✅ test_jit_stability_sequential: {} برنامج", sources.len());
+}

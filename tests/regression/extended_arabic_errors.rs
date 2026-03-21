@@ -627,3 +627,451 @@ fn test_nested_comments() {
     let result = Parser::parse(source);
     println!("Nested comments test: {:?}", result.is_ok());
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// اختبارات Regression إضافية للأخطاء العربية
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// اختبار الأرقام العربية السالبة
+#[test]
+fn test_negative_arabic_numbers() {
+    let source = r#"
+        متغير أ = -١٠٠؛
+        متغير ب = -٥٠.٥؛
+        متغير ج = أ + ب؛
+    "#;
+    
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    assert!(tokens.len() > 0);
+}
+
+/// اختبار الأرقام العربية الكبيرة
+#[test]
+fn test_large_arabic_numbers() {
+    let source = r#"
+        متغير مليون = ١٠٠٠٠٠٠؛
+        متغير مليار = ١٠٠٠٠٠٠٠٠٠؛
+    "#;
+    
+    let mut lexer = Lexer::new(source);
+    let tokens = lexer.tokenize().unwrap();
+    assert!(tokens.len() > 0);
+}
+
+/// اختبار النصوص العربية مع الرموز الخاصة
+#[test]
+fn test_arabic_strings_with_special_chars() {
+    let source = r#"
+        متغير نص1 = "مرحباً! كيف حالك؟"؛
+        متغير نص2 = "السعر: ١٠٠ ريال"؛
+        متغير نص3 = "نسبة ٥٠٪ خصم"؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار الأسماء العربية مع الشرطات السفلية
+#[test]
+fn test_arabic_identifiers_with_underscores() {
+    let source = r#"
+        متغير اسم_المستخدم = "أحمد"؛
+        متغير رقم_الهاتف = 123456؛
+        دالة حساب_المجموع(أ، ب) {
+            أرجع أ + ب؛
+        }
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار التعبيرات المنطقية المعقدة
+#[test]
+fn test_complex_logical_expressions() {
+    let source = r#"
+        متغير أ = صح؛
+        متغير ب = خطأ؛
+        متغير ج = صح؛
+        
+        متغير نتيجة1 = أ و ب أو ج؛
+        متغير نتيجة2 = ليس (أ و ب)؛
+        متغير نتيجة3 = (أ أو ب) و ج؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار التعبيرات الحسابية المعقدة
+#[test]
+fn test_complex_arithmetic_expressions() {
+    let source = r#"
+        متغير أ = 10 + 5 * 2 - 3؛
+        متغير ب = (10 + 5) * (2 - 3)؛
+        متغير ج = 100 / 5 % 3؛
+        متغير د = 2 ^ 3 ^ 2؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار الدوال مع القيم الافتراضية
+#[test]
+fn test_function_default_values() {
+    let source = r#"
+        دالة ترحيب(اسم = "ضيف") {
+            اطبع("مرحباً " + اسم)؛
+        }
+        ترحيب()؛
+        ترحيب("أحمد")؛
+    "#;
+    
+    let result = Parser::parse(source);
+    println!("Default values test: {:?}", result.is_ok());
+}
+
+/// اختبار الدوال المتعددة القيمة المرجعة
+#[test]
+fn test_multiple_return_values() {
+    let source = r#"
+        دالة تقسيم(أ، ب) {
+            متغير حاصل = أ / ب؛
+            متغير باقي = أ % ب؛
+            أرجع [حاصل، باقي]؛
+        }
+        متغير نتيجة = تقسيم(10، 3)؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار القواميس المتداخلة
+#[test]
+fn test_deeply_nested_dictionaries() {
+    let source = r#"
+        متغير شركة = {
+            "اسم": "شركة التقنية"،
+            "عنوان": {
+                "مدينة": "الرياض"،
+                "حي": "العليا"،
+                "شارع": "التحلية"
+            }،
+            "موظفين": [
+                {"اسم": "أحمد"، "قسم": "تقنية"}،
+                {"اسم": "سارة"، "قسم": "تسويق"}
+            ]
+        }؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار حلقات متداخلة مع شروط
+#[test]
+fn test_nested_loops_with_conditions() {
+    let source = r#"
+        متغير نتائج = []؛
+        لكل أ في مدى(1، 6) {
+            لكل ب في مدى(1، 6) {
+                إذا أ * ب > 10 {
+                    أضف(نتائج، أ * ب)؛
+                }
+            }
+        }
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار الدوال العودية المتقدمة
+#[test]
+fn test_advanced_recursion() {
+    let source = r#"
+        دالة عاملي(ن) {
+            إذا ن <= 1 {
+                أرجع 1؛
+            }
+            أرجع ن * عاملي(ن - 1)؛
+        }
+        
+        دالة فيبوناتشي(ن) {
+            إذا ن <= 1 {
+                أرجع ن؛
+            }
+            أرجع فيبوناتشي(ن - 1) + فيبوناتشي(ن - 2)؛
+        }
+        
+        متغير ف = عاملي(5)؛
+        متوسط فيب = فيبوناتشي(10)؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار معالجة الأخطاء في القوائم
+#[test]
+fn test_list_error_handling() {
+    let sources = vec![
+        r#"متغير ق = []؛ ق[0]؛"#,
+        r#"متغير ق = [1، 2، 3]؛ ق[10]؛"#,
+        r#"متغير ق = [1، 2، 3]؛ ق[-1]؛"#,
+    ];
+    
+    for source in sources {
+        let ast = Parser::parse(source).unwrap();
+        let mut interpreter = Interpreter::new();
+        let _ = interpreter.interpret(&ast);
+        // يجب أن يتعامل مع الأخطاء بشكل آمن
+    }
+}
+
+/// اختبار معالجة الأخطاء في القواميس
+#[test]
+fn test_dictionary_error_handling() {
+    let sources = vec![
+        r#"متغير ق = {}؛ ق["مفتاح"]؛"#,
+        r#"متغير ق = {"أ": 1}؛ ق["ب"]؛"#,
+    ];
+    
+    for source in sources {
+        let ast = Parser::parse(source).unwrap();
+        let mut interpreter = Interpreter::new();
+        let _ = interpreter.interpret(&ast);
+        // يجب أن يتعامل مع الأخطاء بشكل آمن
+    }
+}
+
+/// اختبار الكلمات المفتاحية العربية البديلة
+#[test]
+fn test_alternative_arabic_keywords() {
+    let source = r#"
+        # اختبار الاختصارات
+        م متغير_مختصر = 10؛
+        ث ثابت_مختصر = 20؛
+       fn دالة_مختصرة(س) {
+            أرجع س * 2؛
+        }
+    "#;
+    
+    let result = Parser::parse(source);
+    println!("Alternative keywords test: {:?}", result.is_ok());
+}
+
+/// اختبار التعبيرات النصية
+#[test]
+fn test_string_operations() {
+    let source = r#"
+        متغير نص1 = "مرحبا"؛
+        متوسط نص2 = " بالعالم"؛
+        متغير مدمج = نص1 + نص2؛
+        متغير طول_النص = طول(مدمج)؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار المقارنات المتسلسلة
+#[test]
+fn test_chained_comparisons() {
+    let source = r#"
+        متغير س = 5؛
+        متغير نتيجة1 = س > 0 و س < 10؛
+        متغير نتيجة2 = س >= 5 و س <= 10؛
+        متغير نتيجة3 = س == 5 أو س == 10؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار معالجة النهايات المختلفة
+#[test]
+fn test_different_line_endings() {
+    let sources = vec![
+        "متغير أ = 1؛\nمتغير ب = 2؛",
+        "متغير أ = 1؛\r\nمتغير ب = 2؛",
+        "متغير أ = 1؛\rمتغير ب = 2؛",
+    ];
+    
+    for source in sources {
+        let mut lexer = Lexer::new(source);
+        let tokens = lexer.tokenize().unwrap();
+        assert!(tokens.len() > 0);
+    }
+}
+
+/// اختبار التعابير الرياضية المتقدمة
+#[test]
+fn test_advanced_math() {
+    let source = r#"
+        متغير π = 3.14159؛
+        متوسط نصف_قطر = 5؛
+        متغير مساحة = π * نصف_قطر ^ 2؛
+        متغير محيط = 2 * π * نصف_قطر؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار عمليات القوائم المتقدمة
+#[test]
+fn test_advanced_list_operations() {
+    let source = r#"
+        متغير قائمة1 = [1، 2، 3]؛
+        متغير قائمة2 = [4، 5، 6]؛
+        متغير مدمجة = قائمة1 + قائمة2؛
+        متغير طول_إجمالي = طول(قائمة1) + طول(قائمة2)؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار القيم المنطقية في التعابير
+#[test]
+fn test_boolean_in_expressions() {
+    let source = r#"
+        متغير أ = صح + 1؛
+        متغير ب = خطأ + 1؛
+        متغير ج = صح * 5؛
+        متغير د = خطأ * 5؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let _ = interpreter.interpret(&ast);
+    // قد تعمل أو لا حسب التنفيذ
+}
+
+/// اختبار التحويل بين الأنواع
+#[test]
+fn test_type_conversions() {
+    let source = r#"
+        متغير رقم = 42؛
+        متغير نص = نص(رقم)؛
+        متغير منطقي = رقم > 0؛
+    "#;
+    
+    let ast = Parser::parse(source).unwrap();
+    let mut interpreter = Interpreter::new();
+    let result = interpreter.interpret(&ast);
+    assert!(result.is_ok());
+}
+
+/// اختبار الدوال المجهولة
+#[test]
+fn test_anonymous_functions() {
+    let source = r#"
+        متغير ضعف = دالة(س) => س * 2؛
+        متغير مربع = دالة(س) => س * س؛
+    "#;
+    
+    let result = Parser::parse(source);
+    println!("Anonymous functions test: {:?}", result.is_ok());
+}
+
+/// اختبار معالجة الفراغات
+#[test]
+fn test_whitespace_handling() {
+    let sources = vec![
+        "متغير    أ    =    1    ؛",
+        "متغير\nأ\n=\n1\n؛",
+        "متغير\tأ\t=\t1\t؛",
+    ];
+    
+    for source in sources {
+        let ast = Parser::parse(source);
+        assert!(ast.is_ok());
+    }
+}
+
+/// اختبار JIT مع الأخطاء العربية
+#[test]
+fn test_jit_with_arabic_errors() {
+    let sources = vec![
+        r#"متغير أ = ١٠ / ٠؛"#,
+        r#"متغير أ = جذر(-١)؛"#,
+        r#"متغير أ = أس(٢، -١)؛"#,
+    ];
+    
+    for source in sources {
+        let chunk = Compiler::compile_source(source);
+        if let Ok(chunk) = chunk {
+            let mut jit = CompleteV2JitCompiler::new();
+            let mut globals = Rc::new(RefCell::new(Environment::new()));
+            let _ = jit.execute(&chunk, &mut globals);
+            // يجب أن يتعامل مع الأخطاء بشكل آمن
+        }
+    }
+}
+
+/// اختبار الأداء مع النصوص العربية الطويلة
+#[test]
+fn test_performance_long_arabic_text() {
+    let mut source = String::from("متغير نص = \"");
+    for _ in 0..1000 {
+        source.push_str("هذا نص تجريبي طويل. ");
+    }
+    source.push_str("\"؛");
+    
+    let start = std::time::Instant::now();
+    let mut lexer = Lexer::new(&source);
+    let tokens = lexer.tokenize().unwrap();
+    let duration = start.elapsed();
+    
+    println!("Long Arabic text tokenization: {:?}", duration);
+    assert!(tokens.len() > 0);
+}
+
+/// اختبار الاستقرار مع التنفيذ المتعدد
+#[test]
+fn test_stability_multiple_executions() {
+    let source = r#"
+        دالة حساب(أ، ب) {
+            أرجع أ + ب؛
+        }
+        حساب(١، ٢)؛
+    "#;
+    
+    let chunk = Compiler::compile_source(source).expect("فشل الترجمة");
+    
+    for i in 0..10 {
+        let mut jit = CompleteV2JitCompiler::new();
+        let mut globals = Rc::new(RefCell::new(Environment::new()));
+        let result = jit.execute(&chunk, &mut globals);
+        assert!(result.is_ok(), "فشل التنفيذ {}", i + 1);
+    }
+}
