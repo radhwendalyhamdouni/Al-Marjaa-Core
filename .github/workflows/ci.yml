@@ -88,6 +88,22 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
 
+      # Install system dependencies for macOS
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew install openssl sqlite3
+          echo "OPENSSL_DIR=$(brew --prefix openssl)" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=$(brew --prefix openssl)/include" >> $GITHUB_ENV
+          echo "OPENSSL_LIB_DIR=$(brew --prefix openssl)/lib" >> $GITHUB_ENV
+
+      # Install system dependencies for Windows
+      - name: Install Windows dependencies
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install openssl sqlite3
+          echo "OPENSSL_DIR=$VCPKG_INSTALLATION_ROOT/installed/x64-windows" >> $GITHUB_ENV
+
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
