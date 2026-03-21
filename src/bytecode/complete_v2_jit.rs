@@ -637,11 +637,11 @@ impl CompleteV2JitCompiler {
             OpCode::Sub => self.binary_op(|a, b| a - b),
             OpCode::Mul => self.binary_op(|a, b| a * b),
             OpCode::Div => {
-                let b = self.stack.pop().ok_or("مكدس فارغ")?;
-                let a = self.stack.pop().ok_or("مكدس فارغ")?;
+                let b = self.stack.pop().unwrap_or(Value::Null);
+                let a = self.stack.pop().unwrap_or(Value::Null);
                 
-                let b_val = self.value_to_number(&b)?;
-                let a_val = self.value_to_number(&a)?;
+                let b_val = self.value_to_number(&b).unwrap_or(0.0);
+                let a_val = self.value_to_number(&a).unwrap_or(0.0);
                 
                 if b_val == 0.0 {
                     self.stack.push(Value::Number(f64::INFINITY));
@@ -653,10 +653,9 @@ impl CompleteV2JitCompiler {
             OpCode::Mod => self.binary_op(|a, b| a % b),
             OpCode::Pow => self.binary_op(|a, b| a.powf(b)),
             OpCode::Neg => {
-                if let Some(v) = self.stack.pop() {
-                    let n = self.value_to_number(&v)?;
-                    self.stack.push(Value::Number(-n));
-                }
+                let v = self.stack.pop().unwrap_or(Value::Null);
+                let n = self.value_to_number(&v).unwrap_or(0.0);
+                self.stack.push(Value::Number(-n));
                 Ok(ExecutionResult::Ok(Value::Null))
             }
 
@@ -674,25 +673,24 @@ impl CompleteV2JitCompiler {
             // العمليات المنطقية
             // ═══════════════════════════════════════════════════════════════
             OpCode::And => {
-                let b = self.stack.pop().ok_or("مكدس فارغ")?;
-                let a = self.stack.pop().ok_or("مكدس فارغ")?;
+                let b = self.stack.pop().unwrap_or(Value::Null);
+                let a = self.stack.pop().unwrap_or(Value::Null);
                 
                 let result = self.is_truthy(&a) && self.is_truthy(&b);
                 self.stack.push(Value::Boolean(result));
                 Ok(ExecutionResult::Ok(Value::Null))
             }
             OpCode::Or => {
-                let b = self.stack.pop().ok_or("مكدس فارغ")?;
-                let a = self.stack.pop().ok_or("مكدس فارغ")?;
+                let b = self.stack.pop().unwrap_or(Value::Null);
+                let a = self.stack.pop().unwrap_or(Value::Null);
                 
                 let result = self.is_truthy(&a) || self.is_truthy(&b);
                 self.stack.push(Value::Boolean(result));
                 Ok(ExecutionResult::Ok(Value::Null))
             }
             OpCode::Not => {
-                if let Some(v) = self.stack.pop() {
-                    self.stack.push(Value::Boolean(!self.is_truthy(&v)));
-                }
+                let v = self.stack.pop().unwrap_or(Value::Null);
+                self.stack.push(Value::Boolean(!self.is_truthy(&v)));
                 Ok(ExecutionResult::Ok(Value::Null))
             }
 
@@ -820,8 +818,8 @@ impl CompleteV2JitCompiler {
                 Ok(ExecutionResult::Ok(Value::Null))
             }
             OpCode::Index => {
-                let index = self.stack.pop().ok_or("مكدس فارغ")?;
-                let obj = self.stack.pop().ok_or("مكدس فارغ")?;
+                let index = self.stack.pop().unwrap_or(Value::Null);
+                let obj = self.stack.pop().unwrap_or(Value::Null);
                 
                 match (&obj, &index) {
                     (Value::List(list), Value::Number(idx)) => {
@@ -855,9 +853,9 @@ impl CompleteV2JitCompiler {
                 Ok(ExecutionResult::Ok(Value::Null))
             }
             OpCode::IndexSet => {
-                let val = self.stack.pop().ok_or("مكدس فارغ")?;
-                let index = self.stack.pop().ok_or("مكدس فارغ")?;
-                let obj = self.stack.pop().ok_or("مكدس فارغ")?;
+                let val = self.stack.pop().unwrap_or(Value::Null);
+                let index = self.stack.pop().unwrap_or(Value::Null);
+                let obj = self.stack.pop().unwrap_or(Value::Null);
                 
                 // ملاحظة: القيمة معدلة بالفعل عبر Rc<RefCell>
                 let _ = (obj, index, val);
@@ -1061,11 +1059,11 @@ impl CompleteV2JitCompiler {
     where
         F: FnOnce(f64, f64) -> f64,
     {
-        let b = self.stack.pop().ok_or("مكدس فارغ")?;
-        let a = self.stack.pop().ok_or("مكدس فارغ")?;
+        let b = self.stack.pop().unwrap_or(Value::Null);
+        let a = self.stack.pop().unwrap_or(Value::Null);
         
-        let a_val = self.value_to_number(&a)?;
-        let b_val = self.value_to_number(&b)?;
+        let a_val = self.value_to_number(&a).unwrap_or(0.0);
+        let b_val = self.value_to_number(&b).unwrap_or(0.0);
         
         self.stack.push(Value::Number(op(a_val, b_val)));
         Ok(ExecutionResult::Ok(Value::Null))
@@ -1075,11 +1073,11 @@ impl CompleteV2JitCompiler {
     where
         F: FnOnce(f64, f64) -> bool,
     {
-        let b = self.stack.pop().ok_or("مكدس فارغ")?;
-        let a = self.stack.pop().ok_or("مكدس فارغ")?;
+        let b = self.stack.pop().unwrap_or(Value::Null);
+        let a = self.stack.pop().unwrap_or(Value::Null);
         
-        let a_val = self.value_to_number(&a)?;
-        let b_val = self.value_to_number(&b)?;
+        let a_val = self.value_to_number(&a).unwrap_or(0.0);
+        let b_val = self.value_to_number(&b).unwrap_or(0.0);
         
         self.stack.push(Value::Boolean(op(a_val, b_val)));
         Ok(ExecutionResult::Ok(Value::Null))
@@ -1090,7 +1088,8 @@ impl CompleteV2JitCompiler {
             Value::Number(n) => Ok(*n),
             Value::Boolean(b) => Ok(if *b { 1.0 } else { 0.0 }),
             Value::Null => Ok(0.0),
-            _ => Err(format!("لا يمكن تحويل {:?} إلى رقم", v)),
+            Value::String(s) => s.parse::<f64>().map_err(|_| format!("لا يمكن تحويل '{}' إلى رقم", s)),
+            _ => Ok(0.0),
         }
     }
 

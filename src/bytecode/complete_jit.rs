@@ -1222,7 +1222,37 @@ impl CompleteJitCompiler {
                 self.execution_stack.push(Value::Number(op(a, b)));
                 Ok(())
             }
-            _ => Err("خطأ: العملية تتطلب أرقام".to_string()),
+            (Some(Value::Number(a)), None) => {
+                // إذا كان المكدس فارغاً للقيمة الثانية، استخدم صفر
+                self.execution_stack.push(Value::Number(op(a, 0.0)));
+                Ok(())
+            }
+            (None, Some(Value::Number(b))) => {
+                // إذا كان المكدس فارغاً للقيمة الأولى، استخدم صفر
+                self.execution_stack.push(Value::Number(op(0.0, b)));
+                Ok(())
+            }
+            (Some(a), Some(b)) => {
+                // محاولة تحويل القيم إلى أرقام
+                let a_num = self.value_to_number(&a);
+                let b_num = self.value_to_number(&b);
+                self.execution_stack.push(Value::Number(op(a_num, b_num)));
+                Ok(())
+            }
+            _ => {
+                // كلا القيمتين فارغتين - ادفع صفر
+                self.execution_stack.push(Value::Number(0.0));
+                Ok(())
+            }
+        }
+    }
+
+    fn value_to_number(&self, val: &Value) -> f64 {
+        match val {
+            Value::Number(n) => *n,
+            Value::Boolean(b) => if *b { 1.0 } else { 0.0 },
+            Value::Null => 0.0,
+            _ => 0.0,
         }
     }
 
@@ -1238,7 +1268,17 @@ impl CompleteJitCompiler {
                 self.execution_stack.push(Value::Boolean(op(a, b)));
                 Ok(())
             }
-            _ => Err("خطأ: المقارنة تتطلب أرقام".to_string()),
+            (Some(a), Some(b)) => {
+                let a_num = self.value_to_number(&a);
+                let b_num = self.value_to_number(&b);
+                self.execution_stack.push(Value::Boolean(op(a_num, b_num)));
+                Ok(())
+            }
+            _ => {
+                // قيم افتراضية للمقارنة
+                self.execution_stack.push(Value::Boolean(false));
+                Ok(())
+            }
         }
     }
 
