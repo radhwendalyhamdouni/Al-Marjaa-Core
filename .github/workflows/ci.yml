@@ -1,0 +1,343 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Al-Marjaa Language CI/CD Pipeline
+# ═══════════════════════════════════════════════════════════════════════════════
+# This workflow ensures code quality and stability through:
+# - Multi-platform builds (Linux, macOS, Windows)
+# - Comprehensive test suites
+# - Code coverage reporting
+# - Linting with clippy
+# - Formatting checks with rustfmt
+# - Security audits
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: Al-Marjaa CI/CD
+
+on:
+  push:
+    branches: [ main, develop, 'feature/**' ]
+  pull_request:
+    branches: [ main, develop ]
+  release:
+    types: [ created ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Code Quality Checks
+  # ═══════════════════════════════════════════════════════════════════════════
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings -W clippy::all
+
+      - name: Check for security vulnerabilities
+        run: |
+          cargo install cargo-audit --quiet
+          cargo audit
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Build Matrix
+  # ═══════════════════════════════════════════════════════════════════════════
+  build:
+    name: Build (${{ matrix.os }}, Rust ${{ matrix.rust }})
+    needs: lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable, beta]
+        exclude:
+          - os: windows-latest
+            rust: beta
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.rust }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.rust }}-cargo-
+
+      - name: Build
+        run: cargo build --verbose --release
+
+      - name: Build with all features
+        run: cargo build --verbose --all-features
+
+      - name: Upload artifact
+        if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+        uses: actions/upload-artifact@v4
+        with:
+          name: almarjaa-binary
+          path: target/release/almarjaa
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Test Suite
+  # ═══════════════════════════════════════════════════════════════════════════
+  test:
+    name: Tests (${{ matrix.test_suite }})
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test_suite:
+          - unit_tests
+          - integration_tests
+          - jit_tests
+          - e2e_tests
+          - arabic_tests
+          - property_tests
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Run unit tests
+        if: matrix.test_suite == 'unit_tests'
+        run: cargo test --lib --verbose
+
+      - name: Run integration tests
+        if: matrix.test_suite == 'integration_tests'
+        run: cargo test --test integration_tests --verbose
+
+      - name: Run JIT tests
+        if: matrix.test_suite == 'jit_tests'
+        run: |
+          cargo test --test jit_tests --verbose
+          cargo test --test jit_stress_tests --verbose
+          cargo test --test jit_safety_systems --verbose
+          cargo test --test jit_stability_comprehensive --verbose
+
+      - name: Run E2E tests
+        if: matrix.test_suite == 'e2e_tests'
+        run: |
+          cargo test --test e2e_tests --verbose
+          cargo test --test e2e_real_world --verbose
+          cargo test --test e2e_sqlite_tests --verbose
+          cargo test --test e2e_crypto_tests --verbose
+          cargo test --test e2e_module_tests --verbose
+
+      - name: Run Arabic tests
+        if: matrix.test_suite == 'arabic_tests'
+        run: |
+          cargo test --test extended_arabic_errors --verbose
+          cargo test --test arabic_fuzz_generator --verbose
+
+      - name: Run property tests
+        if: matrix.test_suite == 'property_tests'
+        run: cargo test --test property_tests --verbose
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Code Coverage
+  # ═══════════════════════════════════════════════════════════════════════════
+  coverage:
+    name: Code Coverage
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Generate coverage report
+        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Coverage summary
+        run: cargo llvm-cov --all-features --workspace --summary-only
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Documentation
+  # ═══════════════════════════════════════════════════════════════════════════
+  docs:
+    name: Documentation
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build documentation
+        run: cargo doc --no-deps --all-features --document-private-items
+
+      - name: Check documentation examples
+        run: cargo test --doc
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Fuzz Testing (Optional - scheduled)
+  # ═══════════════════════════════════════════════════════════════════════════
+  fuzz:
+    name: Fuzz Testing
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [fuzz_lexer, fuzz_parser, fuzz_arabic, fuzz_unicode, fuzz_jit]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz
+
+      - name: Run fuzz tests
+        run: |
+          cd fuzz
+          cargo fuzz run ${{ matrix.target }} -- -max_total_time=60
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Benchmarking
+  # ═══════════════════════════════════════════════════════════════════════════
+  bench:
+    name: Benchmarks
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run benchmarks
+        run: cargo bench --no-run
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Release Build
+  # ═══════════════════════════════════════════════════════════════════════════
+  release:
+    name: Release
+    if: github.event_name == 'release'
+    needs: [build, test, coverage, docs]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: almarjaa
+            asset_name: almarjaa-linux-amd64
+          - os: macos-latest
+            artifact_name: almarjaa
+            asset_name: almarjaa-macos-amd64
+          - os: windows-latest
+            artifact_name: almarjaa.exe
+            asset_name: almarjaa-windows-amd64.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release
+        run: cargo build --release --locked
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: target/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          asset_content_type: application/octet-stream
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Summary Report
+  # ═══════════════════════════════════════════════════════════════════════════
+  summary:
+    name: CI Summary
+    needs: [lint, build, test, coverage, docs]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "## CI Summary Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint | ${{ needs.lint.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage | ${{ needs.coverage.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docs | ${{ needs.docs.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any job failed
+        if: contains(needs.*.result, 'failure')
+        run: exit 1
