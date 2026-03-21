@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::io::{self, Write};
 use std::rc::Rc;
 
+use crate::modules::ModuleLoader;
 use crate::parser::ast::{
     BinaryOp, ComparisonOp, DestructuringPattern, Expr, FormatPart, LogicalOp, Program, Stmt,
     UnaryOp,
@@ -17,6 +18,8 @@ use value::{Environment, SharedValue, Value};
 pub struct Interpreter {
     pub environment: Rc<RefCell<Environment>>,
     pub globals: Rc<RefCell<Environment>>,
+    /// محمل الوحدات للاستيراد
+    module_loader: Rc<RefCell<ModuleLoader>>,
 }
 
 #[derive(Debug)]
@@ -91,6 +94,60 @@ impl Interpreter {
         Interpreter {
             environment: Rc::clone(&globals),
             globals: Rc::clone(&globals),
+            module_loader: Rc::new(RefCell::new(ModuleLoader::new())),
+        }
+    }
+    
+    /// إنشاء مترجم مع مسارات بحث مخصصة
+    pub fn with_search_paths(search_paths: Vec<std::path::PathBuf>) -> Self {
+        let globals = Rc::new(RefCell::new(Environment::new()));
+        {
+            let mut env = globals.borrow_mut();
+            // الدوال الأساسية (نفس الدالة new)
+            native_io::define_io(&mut env);
+            native_io::define_file_funcs(&mut env);
+            native_io::define_system_funcs(&mut env);
+            native_io::define_time_funcs(&mut env);
+            native_io::define_network_funcs(&mut env);
+            native_io::define_hardware_funcs(&mut env);
+            native_stdlib::define_math(&mut env);
+            native_stdlib::define_string_funcs(&mut env);
+            native_stdlib::define_list_funcs(&mut env);
+            native_stdlib::define_dict_funcs(&mut env);
+            native_stdlib::define_type_funcs(&mut env);
+            native_stdlib::define_random_funcs(&mut env);
+            native_stdlib::define_json_funcs(&mut env);
+            native_stdlib::define_datetime_funcs(&mut env);
+            native_stdlib::define_test_funcs(&mut env);
+            native_stdlib::define_utility_funcs(&mut env);
+            native_stdlib::define_tensor_funcs(&mut env);
+            native_stdlib::define_ai_funcs(&mut env);
+            native_stdlib::define_matrix_funcs(&mut env);
+            native_stdlib::define_gradient_deriv_funcs(&mut env);
+            native_stdlib::define_autograd_funcs(&mut env);
+            native_stdlib::define_http_funcs(&mut env);
+            native_stdlib::define_data_funcs(&mut env);
+            native_stdlib::define_optimizer_funcs(&mut env);
+            native_stdlib::define_training_funcs(&mut env);
+            native_stdlib::define_module_funcs(&mut env);
+            native_stdlib::define_model_io_funcs(&mut env);
+            native_stdlib::define_neural_network_funcs(&mut env);
+            native_stdlib::define_dataloader_funcs(&mut env);
+            native_stdlib::define_regularization_funcs(&mut env);
+            native_stdlib::define_gpu_funcs(&mut env);
+            native_stdlib::define_advanced_model_io_funcs(&mut env);
+            native_stdlib::define_constants(&mut env);
+        }
+        
+        let mut loader = ModuleLoader::new();
+        for path in search_paths {
+            loader.add_search_path(&path);
+        }
+        
+        Interpreter {
+            environment: Rc::clone(&globals),
+            globals: Rc::clone(&globals),
+            module_loader: Rc::new(RefCell::new(loader)),
         }
     }
 
@@ -571,13 +628,51 @@ impl Interpreter {
             Stmt::Import {
                 path,
                 alias,
-                items: _,
+                items,
             } => {
-                let name = alias.as_ref().unwrap_or(path);
-                self.environment
-                    .borrow_mut()
-                    .define(name, Value::String(path.clone()), false);
-                Ok(Rc::new(RefCell::new(Value::Null)))
+                // تحميل الوحدة باستخدام ModuleLoader
+                let module_result = self.module_loader.borrow_mut().load(path);
+                
+                match module_result {
+                    Ok(module) => {
+                        let local_name = alias.as_ref().unwrap_or(path);
+                        
+                        // إنشاء كائن الوحدة
+                        let mut module_dict = HashMap::new();
+                        for (export_name, export_value) in module.get_all_exports() {
+                            module_dict.insert(export_name, export_value);
+                        }
+                        
+                        // إذا تم تحديد عناصر محددة، استيرادها فقط
+                        if !items.is_empty() {
+                            for item in items {
+                                if let Some(value) = module.get_export(item) {
+                                    self.environment.borrow_mut().define(item, (*value.borrow()).clone(), false);
+                                } else {
+                                    return Err(RuntimeError {
+                                        message: format!("'{}' غير موجود في الوحدة '{}'", item, path),
+                                    });
+                                }
+                            }
+                        } else {
+                            // استيراد الوحدة كاملة ككائن
+                            let module_value = Value::Dictionary(module_dict);
+                            self.environment.borrow_mut().define(local_name, module_value, false);
+                        }
+                        
+                        Ok(Rc::new(RefCell::new(Value::Null)))
+                    }
+                    Err(e) => {
+                        // في حالة الخطأ، نسجل رسالة تحذيرية لكن لا نفشل
+                        // (لسلوك متوافق مع الإصدارات السابقة)
+                        eprintln!("تحذير: {}", e);
+                        let name = alias.as_ref().unwrap_or(path);
+                        self.environment
+                            .borrow_mut()
+                            .define(name, Value::String(path.clone()), false);
+                        Ok(Rc::new(RefCell::new(Value::Null)))
+                    }
+                }
             }
 
             Stmt::Assert { condition, message } => {
