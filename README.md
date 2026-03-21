@@ -7,7 +7,7 @@
 ### أول لغة برمجة عربية متكاملة مع الذكاء الاصطناعي
 ### The First AI-Native Arabic Programming Language
 
-[![Version](https://img.shields.io/badge/version-3.4.0-blue.svg)](https://github.com/radhwendalyhamdouni/Al-Marjaa-Language)
+[![Version](https://img.shields.io/badge/version-3.4.2-blue.svg)](https://github.com/radhwendalyhamdouni/Al-Marjaa-Core)
 [![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg)](https://www.rust-lang.org/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
@@ -299,24 +299,59 @@ almarjaa-vibe --run "أنشئ موقع"  # تحويل نص واحد
 
 ```bash
 # Linux / macOS
-curl -sSL https://raw.githubusercontent.com/radhwendalyhamdouni/Al-Marjaa-Language/main/setup.sh | bash
+curl -sSL https://raw.githubusercontent.com/radhwendalyhamdouni/Al-Marjaa-Core/main/setup.sh | bash
 
 # Windows (PowerShell)
-iwr -useb https://raw.githubusercontent.com/radhwendalyhamdouni/Al-Marjaa-Language/main/install/windows/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/radhwendalyhamdouni/Al-Marjaa-Core/main/install/windows/install.ps1 | iex
 ```
 
 ### التثبيت من المصدر | Build from Source
 
 ```bash
 # استنساخ المستودع
-git clone https://github.com/radhwendalyhamdouni/Al-Marjaa-Language.git
-cd Al-Marjaa-Language
+git clone https://github.com/radhwendalyhamdouni/Al-Marjaa-Core.git
+cd Al-Marjaa-Core
 
-# البناء
+# البناء (النواة الخفيفة فقط)
 cargo build --release
 
-# التثبيت
-cargo install --path .
+# البناء مع JIT Compiler
+cargo build --release --features cranelift-backend
+
+# البناء مع جميع المكتبات
+cargo build --release --features full
+```
+
+### Feature Flags
+
+| Flag | الوصف | التبعيات |
+|------|-------|----------|
+| `default` | النواة الأساسية فقط (خفيف) | لا توجد تبعيات ثقيلة |
+| `cranelift-backend` | JIT Compiler المتقدم | cranelift |
+| `database` | دعم SQLite | rusqlite, tokio |
+| `network` | دعم HTTP/الشبكات | reqwest, tokio |
+| `crypto` | دوال التشفير | rsa, aes-gcm, bcrypt, ... |
+| `full-stdlib` | المكتبة القياسية الكاملة | database, network, crypto |
+| `full` | كل شيء | full-stdlib + cranelift-backend |
+
+```bash
+# أمثلة:
+cargo build --release                           # النواة الخفيفة
+cargo build --release --features cranelift-backend  # مع JIT
+cargo build --release --features database       # مع قواعد البيانات
+cargo build --release --features full           # كل شيء
+```
+
+### التكامل مع المكتبات الخارجية | Integration with External Libraries
+
+```toml
+# Cargo.toml
+[dependencies]
+# النواة الأساسية
+almarjaa = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Core" }
+
+# المكتبات الخارجية (اختياري)
+# راجع: https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries
 ```
 
 ### التحقق من التثبيت | Verify Installation
@@ -445,28 +480,48 @@ almarjaa hello.mrj
 ## 🏗️ هيكلية المشروع | Project Structure
 
 ```
-Al-Marjaa-Language/
+Al-Marjaa-Core/
 ├── src/
 │   ├── main.rs              # نقطة الدخول
 │   ├── lib.rs               # المكتبة الرئيسية
+│   ├── core/                # المكونات الأساسية (مستقر)
+│   ├── libs/                # المكتبات والتوسعات
 │   ├── lexer/               # المحلل المعجمي
 │   ├── parser/              # المحلل النحوي
 │   ├── interpreter/         # المفسر
-│   ├── bytecode/            # الآلة الافتراضية
-│   ├── ai_engine/           # محرك الذكاء الاصطناعي
-│   ├── onnx/                # دعم ONNX
-│   ├── ui/                  # نظام واجهات المستخدم (جديد! v3.2.0)
+│   ├── bytecode/            # الآلة الافتراضية و JIT
+│   ├── stdlib/              # المكتبة القياسية
+│   │   ├── regex/           # التعابير النمطية (دائماً متاح)
+│   │   ├── testing/         # أدوات الاختبار (دائماً متاح)
+│   │   ├── crypto/          # التشفير (يتطلب feature)
+│   │   └── database/        # قواعد البيانات (يتطلب feature)
+│   ├── modules/             # نظام الوحدات
+│   ├── cranelift/           # JIT Compiler (اختياري)
 │   ├── formatter/           # منسق الكود
 │   ├── linter/              # محلل الجودة
-│   └── package_manager/     # مدير الحزم
-├── editors/
-│   ├── vscode/              # إضافة VS Code
-│   └── lsp-server/          # خادم LSP
-├── examples/                # أمثلة وتطبيقات
+│   ├── cli/                 # واجهة سطر الأوامر
+│   └── runtime/             # بيئة التشغيل
 ├── tests/                   # اختبارات شاملة
-├── docs/                    # التوثيق
-└── fine_tuning/             # أدوات التدريب
+├── benches/                 # معايير الأداء
+├── examples/                # أمثلة وتطبيقات
+├── fuzz/                    # اختبارات الضغط
+└── docs/                    # التوثيق
 ```
+
+### API Boundaries
+
+| الواجهة | الاستقرار | الوصف |
+|---------|-----------|-------|
+| `core::*` | مستقر | API أساسي لا يتغير إلا في إصدارات رئيسية |
+| `libs::*` | قد يتغير | مكتبات وتوسعات قد تتغير |
+| `stdlib::*` | يعتمد | بعض المكونات تتطلب feature flags |
+
+### المستودعات المرتبطة
+
+| المستودع | الوصف |
+|----------|-------|
+| [Al-Marjaa-Core](https://github.com/radhwendalyhamdouni/Al-Marjaa-Core) | النواة الأساسية (هذا المستودع) |
+| [Al-Marjaa-Libraries](https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries) | المكتبات المتخصصة (AI, Database, Network, Industrial) |
 
 ---
 

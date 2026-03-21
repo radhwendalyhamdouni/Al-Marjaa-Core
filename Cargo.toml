@@ -1,6 +1,6 @@
 [package]
 name = "almarjaa"
-version = "3.4.1"
+version = "3.4.2"
 edition = "2021"
 authors = ["رضوان دالي حمدوني <almarjaa.project@hotmail.com>"]
 description = "لغة المرجع - النسخة الأساسية - لغة برمجة عربية مع JIT Compiler"
@@ -15,7 +15,7 @@ name = "almarjaa"
 path = "src/main.rs"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# التبعيات (جميعها مطلوبة للstdlib الكاملة)
+# التبعيات الأساسية (مطلوبة دائماً)
 # ═══════════════════════════════════════════════════════════════════════════════
 [dependencies]
 # أساسيات
@@ -36,8 +36,6 @@ num_cpus = "1.16"
 chrono = { version = "0.4", features = ["serde"] }
 regex = "1.10"
 dirs = "5.0"
-base64 = "0.22"
-hex = "0.4"
 uuid = { version = "1.0", features = ["v4"] }
 crc32fast = "1.3"
 
@@ -49,28 +47,34 @@ libc = "0.2"
 shellexpand = "3.1"
 tracing = "0.1"
 
-# قواعد البيانات
-rusqlite = { version = "0.31", features = ["bundled"] }
+# ═══════════════════════════════════════════════════════════════════════════════
+# التبعيات الاختيارية (تحتاج feature flags)
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# الشبكة
-reqwest = { version = "0.11", features = ["blocking", "json"] }
-tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "net", "sync", "time", "io-util"] }
+# قواعد البيانات (اختياري)
+rusqlite = { version = "0.31", features = ["bundled"], optional = true }
 
-# التشفير
-md5 = "0.7"
-sha1 = "0.10"
-sha2 = "0.10"
-hmac = "0.12"
-aes-gcm = "0.10"
-rsa = { version = "0.9", features = ["sha2", "pem"] }
-ed25519-dalek = { version = "2.1", features = ["rand_core"] }
-pkcs8 = "0.10"
-pkcs1 = "0.7"
-bcrypt = "0.15"
-argon2 = "0.5"
-pbkdf2 = { version = "0.12", features = ["simple"] }
-scrypt = "0.11"
-password-hash = "0.5"
+# الشبكة (اختياري)
+reqwest = { version = "0.11", features = ["blocking", "json"], optional = true }
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros", "net", "sync", "time", "io-util"], optional = true }
+
+# التشفير (اختياري)
+md5 = { version = "0.7", optional = true }
+sha1 = { version = "0.10", optional = true }
+sha2 = { version = "0.10", optional = true }
+hmac = { version = "0.12", optional = true }
+aes-gcm = { version = "0.10", optional = true }
+rsa = { version = "0.9", features = ["sha2", "pem"], optional = true }
+ed25519-dalek = { version = "2.1", features = ["rand_core"], optional = true }
+pkcs8 = { version = "0.10", optional = true }
+pkcs1 = { version = "0.7", optional = true }
+bcrypt = { version = "0.15", optional = true }
+argon2 = { version = "0.5", optional = true }
+pbkdf2 = { version = "0.12", features = ["simple"], optional = true }
+scrypt = { version = "0.11", optional = true }
+password-hash = { version = "0.5", optional = true }
+base64 = { version = "0.22", optional = true }
+hex = { version = "0.4", optional = true }
 
 # JIT Compiler - Cranelift Backend (اختياري)
 cranelift = { version = "0.116", optional = true }
@@ -85,14 +89,33 @@ target-lexicon = { version = "0.13", optional = true }
 # Feature Flags
 # ═══════════════════════════════════════════════════════════════════════════════
 [features]
-# الافتراضي: Core + Cranelift JIT
-default = ["cranelift-backend"]
+# الافتراضي: Core فقط (خفيف)
+default = []
 
-# Cranelift JIT Backend
+# Core مع JIT
 cranelift-backend = [
     "cranelift", "cranelift-module", "cranelift-native", 
     "cranelift-codegen", "cranelift-frontend", "cranelift-jit", "target-lexicon"
 ]
+
+# دعم قواعد البيانات
+database = ["rusqlite", "tokio"]
+
+# دعم الشبكات
+network = ["reqwest", "tokio"]
+
+# دعم التشفير
+crypto = [
+    "md5", "sha1", "sha2", "hmac", "aes-gcm", "rsa", "ed25519-dalek",
+    "pkcs8", "pkcs1", "bcrypt", "argon2", "pbkdf2", "scrypt", "password-hash",
+    "base64", "hex"
+]
+
+# المكتبة القياسية الكاملة
+full-stdlib = ["database", "network", "crypto"]
+
+# كل شيء (Core + جميع المكتبات)
+full = ["full-stdlib", "cranelift-backend"]
 
 # اختبارات الأداء الثقيلة
 bench-heavy = []
@@ -175,16 +198,8 @@ name = "jit_stability_comprehensive"
 path = "tests/jit_stability_comprehensive.rs"
 
 [[test]]
-name = "e2e_sqlite_tests"
-path = "tests/e2e_sqlite_tests.rs"
-
-[[test]]
-name = "e2e_crypto_tests"
-path = "tests/e2e_crypto_tests.rs"
-
-[[test]]
-name = "e2e_module_tests"
-path = "tests/e2e_module_tests.rs"
+name = "core_libraries_integration"
+path = "tests/core_libraries_integration.rs"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # المعايير (Benchmarks)
