@@ -129,7 +129,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-ai"
 version = "3.4.0"
-source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-AI?branch=main#da8c184fb2bfd38ef18f306c674125f2dc715358"
 dependencies = [
  "chrono",
  "dirs",
@@ -144,7 +144,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-database"
 version = "3.4.0"
-source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Database?branch=main#3435867c060111aed59fc029f4dbb4c6ee364967"
 dependencies = [
  "chrono",
  "hex",
@@ -155,7 +155,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-gpu"
 version = "3.4.0"
-source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-GPU?branch=main#7e57c78307f3acc5202e2a8fa7020eaf62ca288f"
 dependencies = [
  "num_cpus",
  "rayon",
@@ -164,7 +164,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-industrial"
 version = "3.4.0"
-source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Industrial?branch=main#1e92981623c5f7566d0698475ce9123af0ed5024"
 dependencies = [
  "chrono",
  "num_cpus",
@@ -178,7 +178,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-network"
 version = "3.4.0"
-source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Network?branch=main#e047afa8a08193cab7faff3581e189d3faf3db06"
 dependencies = [
  "chrono",
  "rand 0.8.5",
@@ -190,7 +190,7 @@ dependencies = [
 [[package]]
 name = "almarjaa-onnx"
 version = "3.4.0"
-source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-Libraries.git?branch=main#ca0fb68ead4c504add3210a3a512664418cc4be6"
+source = "git+https://github.com/radhwendalyhamdouni/Al-Marjaa-ONNX?branch=main#2b9cb8c9af0a6d3cb6b7c562aa98b77bc2f9c334"
 dependencies = [
  "chrono",
  "ndarray",

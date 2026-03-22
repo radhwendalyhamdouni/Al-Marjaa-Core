@@ -344,7 +344,7 @@ impl ModuleLoader {
         
         for search_path in &self.search_paths {
             for candidate in &candidates {
-                let full_path = search_path.join(&candidate);
+                let full_path = search_path.join(candidate);
                 if full_path.exists() {
                     return Ok(full_path);
                 }
@@ -598,7 +598,7 @@ impl ModuleLoader {
                         let is_match = re.is_match(&text);
                         Ok(Rc::new(RefCell::new(Value::Boolean(is_match))))
                     }
-                    Err(e) => Err(format!("نمط غير صالح: {}", e).into()),
+                    Err(e) => Err(format!("نمط غير صالح: {}", e)),
                 }
             },
         })));
@@ -622,7 +622,7 @@ impl ModuleLoader {
                             Ok(Rc::new(RefCell::new(Value::Null)))
                         }
                     }
-                    Err(e) => Err(format!("نمط غير صالح: {}", e).into()),
+                    Err(e) => Err(format!("نمط غير صالح: {}", e)),
                 }
             },
         })));
@@ -644,7 +644,7 @@ impl ModuleLoader {
                         let result = re.replace_all(&text, replacement.as_str()).to_string();
                         Ok(Rc::new(RefCell::new(Value::String(result))))
                     }
-                    Err(e) => Err(format!("نمط غير صالح: {}", e).into()),
+                    Err(e) => Err(format!("نمط غير صالح: {}", e)),
                 }
             },
         })));
@@ -664,7 +664,7 @@ impl ModuleLoader {
                 let path = args[0].borrow().to_string_value();
                 match std::fs::read_to_string(&path) {
                     Ok(content) => Ok(Rc::new(RefCell::new(Value::String(content)))),
-                    Err(e) => Err(format!("خطأ في قراءة الملف: {}", e).into()),
+                    Err(e) => Err(format!("خطأ في قراءة الملف: {}", e)),
                 }
             },
         })));
@@ -682,7 +682,7 @@ impl ModuleLoader {
                 
                 match std::fs::write(&path, content) {
                     Ok(_) => Ok(Rc::new(RefCell::new(Value::Boolean(true)))),
-                    Err(e) => Err(format!("خطأ في كتابة الملف: {}", e).into()),
+                    Err(e) => Err(format!("خطأ في كتابة الملف: {}", e)),
                 }
             },
         })));
@@ -723,7 +723,7 @@ impl ModuleLoader {
                 // استخدام مكتبة AI
                 match almarjaa_ai::text_to_code(&text) {
                     Ok(code) => Ok(Rc::new(RefCell::new(Value::String(code)))),
-                    Err(e) => Err(format!("خطأ في توليد الكود: {}", e).into()),
+                    Err(e) => Err(format!("خطأ في توليد الكود: {}", e)),
                 }
             },
         })));
@@ -1007,14 +1007,14 @@ fn value_to_json(val: &Value) -> String {
         Value::List(items) => {
             let items_str: Vec<String> = items
                 .iter()
-                .map(|v| value_to_json(&*v.borrow()))
+                .map(|v| value_to_json(&v.borrow()))
                 .collect();
             format!("[{}]", items_str.join(","))
         }
         Value::Dictionary(map) => {
             let items_str: Vec<String> = map
                 .iter()
-                .map(|(k, v)| format!("\"{}\":{}", k, value_to_json(&*v.borrow())))
+                .map(|(k, v)| format!("\"{}\":{}", k, value_to_json(&v.borrow())))
                 .collect();
             format!("{{{}}}", items_str.join(","))
         }

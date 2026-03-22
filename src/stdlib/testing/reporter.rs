@@ -18,7 +18,7 @@ impl مُخبر_النتائج {
         let _ = writeln!(output, "════════════════════════════════════════════════════════");
         
         // ملخص
-        let _ = writeln!(output, "");
+        let _ = writeln!(output);
         let _ = writeln!(output, "📈 ملخص:");
         let _ = writeln!(output, "─────────────");
         let _ = writeln!(output, "  ✅ نجح: {}", النتائج.عدد_النجح);
@@ -33,7 +33,7 @@ impl مُخبر_النتائج {
         
         // تفاصيل الاختبارات
         if !النتائج.الاختبارات.is_empty() {
-            let _ = writeln!(output, "");
+            let _ = writeln!(output);
             let _ = writeln!(output, "📋 تفاصيل الاختبارات:");
             let _ = writeln!(output, "───────────────────────");
             
@@ -56,7 +56,7 @@ impl مُخبر_النتائج {
             }
         }
         
-        let _ = writeln!(output, "");
+        let _ = writeln!(output);
         let _ = writeln!(output, "════════════════════════════════════════════════════════");
         
         output

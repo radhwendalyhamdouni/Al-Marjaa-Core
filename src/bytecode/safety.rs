@@ -244,7 +244,7 @@ impl ExecutionGuard {
         }
 
         // Check time (less frequent)
-        if self.operation_count.load(Ordering::Relaxed) % ITERATIONS_PER_CHECK == 0 {
+        if self.operation_count.load(Ordering::Relaxed).is_multiple_of(ITERATIONS_PER_CHECK) {
             let elapsed = self.start_time.elapsed();
             if elapsed > self.limits.max_time {
                 self.trigger_bailout(BailoutReason::Timeout {
@@ -270,7 +270,7 @@ impl ExecutionGuard {
         }
         
         // Periodic check
-        if count % ITERATIONS_PER_CHECK == 0 {
+        if count.is_multiple_of(ITERATIONS_PER_CHECK) {
             self.check()?;
         }
         

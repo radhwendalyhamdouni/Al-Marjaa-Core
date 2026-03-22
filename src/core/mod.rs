@@ -42,16 +42,16 @@ pub use crate::error::{self, AlMarjaaError, ErrorCode, Position, Severity, Span}
 pub use crate::bytecode::{self, Compiler, VM, Chunk, OpCode};
 
 /// Core types and traits
+/// أنواع البيانات الأساسية
 pub mod types {
-    //! أنواع البيانات الأساسية
     
     pub use crate::interpreter::value::{Value, Environment};
     pub use crate::bytecode::{ExecutionResult, VMStats};
 }
 
 /// Core traits for extensibility
+/// السمات الأساسية للتوسع
 pub mod traits {
-    //! السمات الأساسية للتوسع
     
     use crate::interpreter::value::Value;
 
