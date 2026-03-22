@@ -108,6 +108,9 @@ almarjaa-gpu = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-GPU", b
 # مكتبة الأتمتة الصناعية (مستودع منفصل)
 almarjaa-industrial = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Industrial", branch = "main", optional = true }
 
+# مكتبة الويب (مستودع منفصل)
+almarjaa-web = { git = "https://github.com/radhwendalyhamdouni/Al-Marjaa-Web", branch = "main", optional = true }
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # Feature Flags
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -159,8 +162,11 @@ gpu = ["almarjaa-gpu"]
 # مكتبة الأتمتة الصناعية
 industrial = ["almarjaa-industrial"]
 
+# مكتبة الويب
+web = ["almarjaa-web"]
+
 # جميع المكتبات الخارجية
-all-libs = ["ai", "database-advanced", "network-advanced", "onnx", "gpu", "industrial"]
+all-libs = ["ai", "database-advanced", "network-advanced", "onnx", "gpu", "industrial", "web"]
 
 # كل شيء (Core + جميع المكتبات)
 full = ["full-stdlib", "cranelift-backend", "all-libs"]
